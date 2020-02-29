@@ -1,0 +1,391 @@
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>www.layabox.com</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="full-screen" content="true">
+    <meta name="screen-orientation" content="portrait">
+    <meta name="x5-fullscreen" content="true">
+    <meta name="360-fullscreen" content="true">
+    <meta http-equiv="expires" content="0">
+    <meta name="laya" logoimg="logo.png" logobkcolor="#ffffff" screenorientation="landscape" cacheid="fffffffff">
+    <meta name="viewport"
+        content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+</head>
+
+<body
+    style="background-color: black; margin: 0px; overflow: hidden; user-select: none; -webkit-tap-highlight-color: rgba(200, 200, 200, 0);">
+
+<div id="layaContainer"><canvas id="layaCanvas" width="1176" height="1280"
+        style="position: absolute; left: 0px; top: 0px; background: rgb(0, 0, 0); transform-origin: 0px 0px 0px; transform: matrix(0.5, 0, 0, 0.5, 0, 0);"></canvas>
+    <div style="position: absolute; z-index: 100000;"></div><canvas height="280" width="360"
+        style="pointer-events: none; background: rgba(150, 150, 150, 0.8); z-index: 100000; position: absolute; direction: ltr; left: 0px; top: 0px; width: 180px; height: 140px;"></canvas>
+</div><canvas width="1024" height="512" style="left: -10000px; position: absolute;"></canvas>
+
+
+    <!-- <script type="text/javascript" src="https://api.map.baidu.com/api?v=2.0&ak=LIhOlvWfdiPYMCsK5wsqlFQD8wW4Bfy6&s=1"></script> -->
+    <script src="libs/laya.core.js"></script>
+    <script src="libs/laya.ani.js"></script>
+    <script src="libs/laya.d3.js"></script>
+    <script src="libs/CameraMoveScript.js"></script>
+    <script>
+        class LoadResourceDemo {
+            constructor() {
+                this.scene = null;
+                this.sprite3D = null;
+                //初始化引擎
+                Laya3D.init(0, 0);
+                Laya.stage.scaleMode = Laya.Stage.SCALE_FULL;
+                Laya.stage.screenMode = Laya.Stage.SCREEN_NONE;
+                //显示性能面板
+                Laya.Stat.show();
+
+                //加载资源
+                //this.LoadRes();
+
+                //批量预加载方式
+                this.PreloadingRes();
+            }
+            LoadRes() {
+                //场景加载
+                Laya.Scene3D.load("res/threeDimen/scene/XunLongShi/XunLongShi.ls", Laya.Handler.create(this, function (scene) {
+                    this.scene = scene;
+                    Laya.stage.addChild(scene);
+                    //添加相机
+                    var camera = new Laya.Camera();
+                    this.scene.addChild(camera);
+                    //设置相机清楚标记，使用天空
+                    camera.clearFlag = Laya.BaseCamera.CLEARFLAG_SKY;
+                    //调整相机的位置
+                    camera.transform.translate(new Laya.Vector3(3, 20, 47));
+                    //相机视角控制组件(脚本)
+                    camera.addComponent(CameraMoveScript);
+
+                    //添加光照
+                    var directionLight = this.scene.addChild(new Laya.DirectionLight());
+                    directionLight.color = new Laya.Vector3(1, 1, 1);
+                    directionLight.transform.rotate(new Laya.Vector3(-3.14 / 3, 0, 0));
+
+
+                    (scene.getChildByName('Scenes').getChildByName('HeightMap')).active = false;
+                    (scene.getChildByName('Scenes').getChildByName('Area')).active = false;
+                    this.sprite3D = this.scene.addChild(new Laya.Sprite3D());
+
+                    ///材质加载
+                    Laya.BaseMaterial.load("res/threeDimen/skyBox/skyBox2/skyBox2.lmat", Laya.Handler.create(null, function (mat) {
+                        //获取相机的天空渲染器
+                        var skyRenderer = camera.skyRenderer;
+                        //创建天空盒的mesh
+                        skyRenderer.mesh = Laya.SkyBox.instance;
+                        //设置天空盒材质
+                        skyRenderer.material = mat;
+                    }));
+
+                    //加载纹理
+                    Laya.Texture2D.load("res/threeDimen/texture/earth.png", Laya.Handler.create(this, function (tex) {
+                        //使用纹理
+                        var earth1 = scene.addChild(new Laya.MeshSprite3D(Laya.PrimitiveMesh.createSphere(5, 32, 32)));
+                        earth1.transform.translate(new Laya.Vector3(17, 20, 0));
+
+                        var earthMat = new Laya.BlinnPhongMaterial();
+                        earthMat.albedoTexture = tex;
+                        earthMat.albedoIntensity = 1;
+                        earth1.meshRenderer.material = earthMat;
+                    }));
+
+
+                    // //加载Mesh
+                    // Laya.Mesh.load("res/threeDimen/skinModel/LayaMonkey/Assets/LayaMonkey/LayaMonkey-LayaMonkey.lm", Laya.Handler.create(this, function (mesh) {
+                    //     var layaMonkey = this.sprite3D.addChild(new Laya.MeshSprite3D(mesh));
+                    //     layaMonkey.transform.localScale = new Laya.Vector3(4, 4, 4);
+                    //     layaMonkey.transform.rotation = new Laya.Quaternion(0.7071068, 0, 0, -0.7071067);
+                    //     layaMonkey.transform.translate(new Laya.Vector3(5, 3, 13));
+                    // }));
+                    // //加载精灵
+                    // Laya.Sprite3D.load("res/threeDimen/skinModel/LayaMonkey/LayaMonkey.lh", Laya.Handler.create(this, function (sp) {
+                    //     var layaMonkey2 = scene.addChild(sp);
+                    //     layaMonkey2.transform.localScale = new Laya.Vector3(4, 4, 4);
+                    //     layaMonkey2.transform.translate(new Laya.Vector3(-10, 13, 0));
+                    // }));
+
+                    // //加载胖子精灵
+                    // Laya.Sprite3D.load("res/threeDimen/skinModel/BoneLinkScene/PangZiNoAni.lh", Laya.Handler.create(this, function (sp) {
+                    //     this.pangzi = scene.addChild(sp);
+                    //     this.pangzi.transform.localScale = new Laya.Vector3(4, 4, 4);
+                    //     this.pangzi.transform.translate(new Laya.Vector3(-20, 13, 0));
+                    //     //获取动画组件
+                    //     this.pangziAnimator = this.pangzi.getChildAt(0).getComponent(Laya.Animator);
+
+                    //     Laya.AnimationClip.load("res/threeDimen/skinModel/BoneLinkScene/Assets/Model3D/PangZi-Take 001.lani", Laya.Handler.create(this, function (aniClip) {
+                    //         //创建动作状态
+                    //         var state1 = new Laya.AnimatorState();
+                    //         //动作名称
+                    //         state1.name = "hello";
+                    //         //动作播放起始时间
+                    //         state1.clipStart = 0 / 581;
+                    //         //动作播放结束时间
+                    //         state1.clipEnd = 581 / 581;
+                    //         //设置动作
+                    //         state1.clip = aniClip;
+                    //         //设置动作循环
+                    //         state1.clip.islooping = true;
+                    //         //为动画组件添加一个动作状态
+                    //         this.pangziAnimator.addState(state1);
+                    //         //播放动作
+                    //         this.pangziAnimator.play("hello");
+                    //     }));
+                    // }));
+
+                }));
+            }
+            //批量预加载方式
+            PreloadingRes() {
+                //预加载所有资源
+                var resource = ["res/threeDimen/scene/XunLongShi/XunLongShi.ls",
+                    "res/threeDimen/skyBox/skyBox2/skyBox2.lmat",
+                    "res/threeDimen/texture/earth.png"];
+                    // "res/threeDimen/skinModel/LayaMonkey/Assets/LayaMonkey/LayaMonkey-LayaMonkey.lm",
+                    // "res/threeDimen/skinModel/LayaMonkey/LayaMonkey.lh",
+                    // "res/threeDimen/skinModel/BoneLinkScene/PangZiNoAni.lh",
+                    // "res/threeDimen/skinModel/BoneLinkScene/Assets/Model3D/PangZi-Take 001.lani"
+                Laya.loader.create(resource, Laya.Handler.create(this, this.onPreLoadFinish));
+            }
+            onPreLoadFinish() {
+                //初始化3D场景
+                this.scene = Laya.stage.addChild(Laya.Loader.getRes("res/threeDimen/scene/XunLongShi/XunLongShi.ls"));
+
+                //添加相机
+                var camera = new Laya.Camera();
+                this.scene.addChild(camera);
+                //设置相机清楚标记，使用天空
+                camera.clearFlag = Laya.BaseCamera.CLEARFLAG_SKY;
+                //调整相机的位置
+                camera.transform.translate(new Laya.Vector3(3, 20, 47));
+                //相机视角控制组件(脚本)
+                camera.addComponent(CameraMoveScript);
+
+                //添加光照
+                var directionLight = this.scene.addChild(new Laya.DirectionLight());
+                //光照颜色
+                directionLight.color = new Laya.Vector3(1, 1, 1);
+                directionLight.transform.rotate(new Laya.Vector3(-3.14 / 3, 0, 0));
+
+                //使用材质
+                var skyboxMaterial = Laya.Loader.getRes("res/threeDimen/skyBox/skyBox3/skyBox3.lmat");
+                var skyRenderer = camera.skyRenderer;
+                skyRenderer.mesh = Laya.SkyBox.instance;
+                skyRenderer.material = skyboxMaterial;
+
+                //激活场景中的子节点
+                (this.scene.getChildByName('Scenes').getChildByName('HeightMap')).active = false;
+                (this.scene.getChildByName('Scenes').getChildByName('Area')).active = false;
+
+
+                //使用纹理
+                var earth1 = this.scene.addChild(new Laya.MeshSprite3D(Laya.PrimitiveMesh.createSphere(5, 32, 32)));
+                earth1.transform.translate(new Laya.Vector3(17, 20, 0));
+
+                var earthMat = new Laya.BlinnPhongMaterial();
+                earthMat.albedoTexture = Laya.Loader.getRes("res/threeDimen/texture/earth.png");
+                earthMat.albedoIntensity = 1;
+                earth1.meshRenderer.material = earthMat;
+
+                // //获取Mesh资源
+                // var mesh = Laya.Loader.getRes("res/threeDimen/skinModel/LayaMonkey/Assets/LayaMonkey/LayaMonkey-LayaMonkey.lm");
+                // //为精灵设置Mesh资源
+                // var layaMonkey = this.scene.addChild(new Laya.MeshSprite3D(mesh));
+                // layaMonkey.transform.localScale = new Laya.Vector3(4, 4, 4);
+                // layaMonkey.transform.rotation = new Laya.Quaternion(0.7071068, 0, 0, -0.7071067);
+                // layaMonkey.transform.translate(new Laya.Vector3(5, 3, 13));
+
+                // //使用精灵
+                // var sp = Laya.Loader.getRes("res/threeDimen/skinModel/LayaMonkey/LayaMonkey.lh");
+                // var layaMonkey2 = this.scene.addChild(sp);
+                // layaMonkey2.transform.localScale = new Laya.Vector3(4, 4, 4);
+                // layaMonkey2.transform.translate(new Laya.Vector3(-10, 13, 0));
+
+                // //使用精灵
+                // this.pangzi = Laya.Loader.getRes("res/threeDimen/skinModel/BoneLinkScene/PangZiNoAni.lh");
+                // this.scene.addChild(this.pangzi);
+                // this.pangzi.transform.localScale = new Laya.Vector3(4, 4, 4);
+                // this.pangzi.transform.translate(new Laya.Vector3(-20, 13, 0));
+                // //获取动画组件
+                // this.pangziAnimator = this.pangzi.getChildAt(0).getComponent(Laya.Animator);
+
+                // var pangAni = Laya.Loader.getRes("res/threeDimen/skinModel/BoneLinkScene/Assets/Model3D/PangZi-Take 001.lani");
+                // //创建动作状态
+                // var state1 = new Laya.AnimatorState();
+                // //动作名称
+                // state1.name = "hello";
+                // //动作播放起始时间
+                // state1.clipStart = 0 / 581;
+                // //动作播放结束时间
+                // state1.clipEnd = 581 / 581;
+                // //设置动作
+                // state1.clip = pangAni;
+                // //设置动作循环
+                // state1.clip.islooping = true;
+                // //为动画组件添加一个动作状态
+                // this.pangziAnimator.addState(state1);
+                // //播放动作
+                // this.pangziAnimator.play("hello");
+            }
+        }
+
+        //激活启动类
+        new LoadResourceDemo();</script>
+
+
+    <script>
+        // var layaAirLibBasePath = "js/";;
+        // var d3CommandLibBasePath = "http://layaair.ldc.layabox.com/demo/master/samples/js/3d/";
+        // var d3CustomLibBasePath = "http://layaair.ldc.layabox.com/demo/master/samples/js/3d/advancedStage/";
+        var libs;
+        var manifest, libsMap, pathMap;
+        var theCode;
+
+        function getQueryString(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return unescape(r[2]); return null;
+        }
+
+        function parseToSearchUrl(key) {
+            var keyArr = key.split("&");
+            return "category=" + keyArr[0] + "&group=" + keyArr[1] + "&name=" + keyArr[2];
+        }
+
+        if (location.search) {
+            var search = location.search.substr(1);
+            // var p = search.split('&');
+            var p = [
+                getQueryString("category"),
+                getQueryString("group"),
+                getQueryString("name"),
+                getQueryString("lib")
+            ];
+
+            loadLibs(p[3].split(','), function () {
+                // path
+                var path = p[0] + '/js/';
+                if (p[0] == '2d') {
+                    path += p[1] + '_' + p[2] + '.js';
+                }
+                else {
+                    path += "LayaAir3D_" + p[1] + '/';
+                    path += p[2];
+                    path += '.js';
+                }
+
+                // load js file
+                var xmlhttp = new XMLHttpRequest();
+                xmlhttp.open("GET", path, false);
+                xmlhttp.send(null);
+
+                var code = convertDemoResPath(xmlhttp.responseText);
+                createScript("source", code);
+            });
+        }
+
+        function showWithCode(code, libs) {
+            // fix resource paths
+            theCode = code.replace(/\.\.\/\.\.\//g, '');
+            loadLibs(libs.split(","), appendCode);
+        }
+
+        function appendCode(code) {
+            if (!code) code = theCode;
+            var script = document.createElement("script");
+            script.innerHTML = code;
+            document.head.appendChild(script);
+        }
+
+        function loadLibs(libs, onFinish) {
+            if (libs.length == 0) {
+                onFinish();
+                return;
+            }
+
+            var lib = libs.shift();
+
+            switch (lib) {
+                /*
+                 * 百度地图的异步加载方式，在参数中传入回调，不由script.onload控制。
+                 * 由于此处的return导致后续lib不继续加载，所以百度地图必须使最后一个lib
+                 */
+                case "BaiduMap":
+                    lib = "https://api.map.baidu.com/api?v=2.0&ak=LIhOlvWfdiPYMCsK5wsqlFQD8wW4Bfy6&s=1&callback=appendCode";
+                    createScript("url", lib);
+                    return;
+                case "protobuf":
+                    lib = "libs/protobuf.min.js";
+                    break;
+                case "matter.js":
+                case "LayaRender.js":
+                    lib = "libs/" + lib;
+                    break;
+                case "UI%20code":
+                case "UI code":
+                    lib = "libs/LayaUISample.max.all.js";
+                    break;
+                case "Tool.js":
+                case "pbrlut.js":
+                case "CameraMoveScript.js":
+                case "VRCameraMoveScript.js":
+                case "TriggerCollisionScript.js":
+                case "AnimatorStateScriptTest.js":
+                case "CustomAnimatorStateScript.js":
+
+                case "DrawBoxColliderScript.js":
+                    lib = "3d/js/common/" + lib;
+                    break;
+                case "CustomMaterial.js":
+                case "CustomTerrainMaterial.js":
+                case "cartoonMaterial.js":
+                case "MultiplePassOutlineMaterial.js":
+                    lib = "3d/js/LayaAir3D_Shader/customMaterials/" + lib;
+                    break;
+                case "astar.js":
+                    lib = "libs/" + lib;
+                    break;
+                default:
+                    lib = "libs/laya." + lib + ".js";
+                    break;
+            }
+
+            createScript("url", lib).onload = function () {
+                loadLibs(libs, onFinish);
+            }
+        }
+
+        /**
+         * @param  {string} type  source | url, if empty, just create a script tag.
+         * @param  {string} value while type is "source", "value" is source code; while type is "url", "value" is url address.
+         * @return {<script>}     script tag.
+         */
+        function createScript(type, value) {
+            var script = document.createElement("script");
+            document.head.appendChild(script);
+
+            if (!type) return script;
+
+            switch (type) {
+                case "source":
+                    script.innerHTML = value;
+                    break;
+                case "url":
+                    script.src = value;
+                    break;
+            }
+            return script;
+        }
+
+        function convertDemoResPath(code) {
+            return code.replace(/(\.\.\/)+/g, "");
+        }
+    </script>
+
+</body>
+
+</html>
