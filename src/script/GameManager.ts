@@ -4,6 +4,8 @@ import MainLayer from "../ui/mainLayer"
 export default class GameManager {
     role3D: Laya.Sprite3D;
 
+    camCube: Laya.Sprite3D;
+
     public baseLayer: MainLayer = new MainLayer();
 
     constructor() {

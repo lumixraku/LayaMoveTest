@@ -58,11 +58,16 @@ export default class RoleMoveScript extends Laya.Script3D {
             setTimeout(() => {
                 // this.player.transform.rotate(new Vector3(0, 180, 0), true, false)
 
+
                 //不能正确指向目标
                 // Laya.Quaternion.lookAt(transform.position, lookAtPoint32, new Laya.Vector3(0, 1, 0), rotation);
                 // this.player.transform.localRotation = rotation;
 
-                // this.player.transform.lookAt(lookAtPoint32, new Laya.Vector3(0, 1, 0), false);
+                this.player.transform.lookAt(lookAtPoint32, new Laya.Vector3(0, 1, 0), false);
+                let forward = new Vector3()
+                this.player.transform.getForward(forward)
+                console.log("for ward", forward)
+
                 // this.player.transform.rotate(new Vector3(0, 180, 0), false, false);//中心对称取反一下
                 console.log("pos", this.player.transform.position)
                 let newPos = new Vector3();
@@ -84,7 +89,7 @@ export default class RoleMoveScript extends Laya.Script3D {
 
             let transform: Laya.Transform3D = this.player.transform;
             this.player.transform.position = this.lastPos;
-            console.log("new pos  1", transform.position.x - this.lastPos.x)
+            // console.log("new pos  1", transform.position.x - this.lastPos.x)
             // console.log("autoMoveDir", GameManager.Instance.sceneData.autoMoveDir)
 
             // 弧度 = (π × 角度) / 180
@@ -153,7 +158,7 @@ export default class RoleMoveScript extends Laya.Script3D {
             // 当看 1 -1 时  人物实际上看的是 -1 -1
             Laya.Quaternion.lookAt(transform.position, lookAtPoint, new Laya.Vector3(0, 1, 0), rotation);
             this.player.transform.localRotation = rotation;
-            console.log("new pos  2", this.player.transform.position.x - this.lastPos.x)
+            // console.log("new pos  2", this.player.transform.position.x - this.lastPos.x)
             // console.log("local rotation 2", sz, sx, lookAtPoint, this.player.transform.localRotation);
 
             // 方法3 rotate //不行 这样会一直转下去
@@ -168,7 +173,7 @@ export default class RoleMoveScript extends Laya.Script3D {
             // (this.owner as Laya.Sprite3D).transform.translate(new Laya.Vector3(1/600, 0, -1/600), true);
             let newPos = new Vector3();
             Vector3.add(transform.position, new Vector3(sx/10, 0, sz/10) ,newPos)
-            console.log("new pos  3", newPos.x - this.lastPos.x)
+            // console.log("new pos  3", newPos.x - this.lastPos.x)
             // this.player.transform.position = newPos
             this.player.transform.translate(new Vector3(sx / 10, 0, sz / 10), true)
             this.lastPos = newPos
@@ -190,3 +195,6 @@ export default class RoleMoveScript extends Laya.Script3D {
         // console.log("player collision", collision)
     }
 }
+
+// 另外有个帖子也说道了朝向这个问题
+// https://ask.layabox.com/question/38719

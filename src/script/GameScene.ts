@@ -29,6 +29,11 @@ export default  class GameScene extends Laya.Scene3D {
             //相机视角控制组件(脚本),
             // camera.addComponent(CameraMoveScript);
             this._scene.addChild(camera);  // camera 也有scene 属
+            let camCube = scene.getChildByName("Cube") as Laya.Sprite3D;
+            this._scene.addChild(camCube)
+            GameManager.Instance.camCube = camCube;
+
+
 
             // 调整了摄像头的方位 目前看到的是这样的
             // x
@@ -72,7 +77,6 @@ export default  class GameScene extends Laya.Scene3D {
 
         // 获取terrain // terrain 在console 中显示的类型就是 MeshSprite3D
         var terrain: Laya.MeshSprite3D = desert.getChildByName("Terrain") as Laya.MeshSprite3D
-        console.log("terrain", terrain)
 
 
         Mesh.load("res/LayaScene_DesertScene_mobile/Conventional/terrain/terrain_Terrain.lm", Laya.Handler.create(this, function (mesh: Mesh): void {
@@ -96,11 +100,11 @@ export default  class GameScene extends Laya.Scene3D {
         let kyle = desert.getChildByName("RobotKyle") as Laya.Sprite3D
         console.log("kyle", kyle.transform.position)
         let kyle1 = desert.getChildByName("RobotKyle (1)") as Laya.Sprite3D
-        console.log("kyle1", kyle1.transform.position)
+        // console.log("kyle1", kyle1.transform.position)
         let kyle2 = desert.getChildByName("RobotKyle (2)") as Laya.Sprite3D
-        console.log("kyle2", kyle2.transform.position)
+        // console.log("kyle2", kyle2.transform.position)
         let roboto = desert.getChildByName("Roboto") as Laya.Sprite3D
-        console.log("roboto", roboto.transform.position)
+        // console.log("roboto", roboto.transform.position)
 
     }
 

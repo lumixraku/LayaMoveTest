@@ -19,9 +19,11 @@ export default class CameraFollowScript extends Laya.Script3D {
     protected camera: Laya.BaseCamera;
     protected scene: Laya.Scene3D;
     protected role3D: Laya.Sprite3D;
+    protected camCube: Laya.Sprite3D;
 
     constructor() {
         super();
+
     }
 
     /**
@@ -43,7 +45,16 @@ export default class CameraFollowScript extends Laya.Script3D {
 
 
             // console.log("rotation   3", this.camera.transform.localRotation)
+            let forward = new Vector3()
+            this.camera.transform.getForward(forward)
 
+            let scaleFactor = 10;
+            let cubeDistance = new Vector3(forward.x * scaleFactor, 3, forward.y * scaleFactor)
+            let cuePos = new Vector3()
+            Vector3.add(this.camera.transform.position, cubeDistance, cuePos)
+
+            this.camCube.transform.position = cuePos
+            console.log("forward", forward, cuePos)
         }
     }
 
@@ -59,6 +70,9 @@ export default class CameraFollowScript extends Laya.Script3D {
         this.camera = this.owner as Laya.Camera;
         this.role3D = GameManager.Instance.role3D;
         this.lastRoleTransform = this.role3D.transform.position;
+
+        this.camCube = GameManager.Instance.camCube;
+
     }
 
     /**
@@ -84,8 +98,10 @@ export default class CameraFollowScript extends Laya.Script3D {
             // console.log("offset ", offsetX, offsetY, yprElem.x, yprElem.y)
             this._updateRotation();
 
-        }else{
-        // if (this.isLeftMouseDown) {
+
+
+        } else {
+            // if (this.isLeftMouseDown) {
             let roleMoveVec = new Vector3(
                 role3D.transform.position.x - this.lastRoleTransform.x,
                 role3D.transform.position.y - this.lastRoleTransform.y,
@@ -114,6 +130,8 @@ export default class CameraFollowScript extends Laya.Script3D {
     }
 
     protected rightMouseDown(e: Laya.Event): void {
+
+        // 根据四元数得到欧拉角
         this.camera.transform.localRotation.getYawPitchRoll(this.yawPitchRoll);
         //如果e 是 Event 则应该这样获取到在stage上的位置 Laya.stage.mouseX;
         this.lastMouseX = e.stageX

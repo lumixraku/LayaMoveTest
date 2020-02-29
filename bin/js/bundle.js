@@ -21,7 +21,6 @@
     GameConfig.stat = false;
     GameConfig.physicsDebug = false;
     GameConfig.exportSceneToJson = true;
-    console.log("game config init");
     // GameConfig.init();
     //# sourceMappingURL=GameConfig.js.map
 
@@ -212,8 +211,27 @@
     var Shader3D$1 = Laya.Shader3D;
     function customTerrianShader() {
         CustomTerrainMaterial.__init__();
-        var attributeMap = { 'a_Position': VertexMesh.MESH_POSITION0, 'a_Normal': VertexMesh.MESH_NORMAL0, 'a_Texcoord0': VertexMesh.MESH_TEXTURECOORDINATE0 };
-        var uniformMap = { 'u_MvpMatrix': Shader3D$1.PERIOD_SPRITE, 'u_WorldMat': Shader3D$1.PERIOD_SPRITE, 'u_CameraPos': Shader3D$1.PERIOD_CAMERA, 'u_SplatAlphaTexture': Shader3D$1.PERIOD_MATERIAL, 'u_DiffuseTexture1': Shader3D$1.PERIOD_MATERIAL, 'u_DiffuseTexture2': Shader3D$1.PERIOD_MATERIAL, 'u_DiffuseTexture3': Shader3D$1.PERIOD_MATERIAL, 'u_DiffuseTexture4': Shader3D$1.PERIOD_MATERIAL, 'u_DiffuseTexture5': Shader3D$1.PERIOD_MATERIAL, 'u_DiffuseScale1': Shader3D$1.PERIOD_MATERIAL, 'u_DiffuseScale2': Shader3D$1.PERIOD_MATERIAL, 'u_DiffuseScale3': Shader3D$1.PERIOD_MATERIAL, 'u_DiffuseScale4': Shader3D$1.PERIOD_MATERIAL, 'u_DiffuseScale5': Shader3D$1.PERIOD_MATERIAL };
+        var attributeMap = {
+            'a_Position': VertexMesh.MESH_POSITION0,
+            'a_Normal': VertexMesh.MESH_NORMAL0,
+            'a_Texcoord0': VertexMesh.MESH_TEXTURECOORDINATE0
+        };
+        var uniformMap = {
+            'u_MvpMatrix': Shader3D$1.PERIOD_SPRITE,
+            'u_WorldMat': Shader3D$1.PERIOD_SPRITE,
+            'u_CameraPos': Shader3D$1.PERIOD_CAMERA,
+            'u_SplatAlphaTexture': Shader3D$1.PERIOD_MATERIAL,
+            'u_DiffuseTexture1': Shader3D$1.PERIOD_MATERIAL,
+            'u_DiffuseTexture2': Shader3D$1.PERIOD_MATERIAL,
+            'u_DiffuseTexture3': Shader3D$1.PERIOD_MATERIAL,
+            'u_DiffuseTexture4': Shader3D$1.PERIOD_MATERIAL,
+            'u_DiffuseTexture5': Shader3D$1.PERIOD_MATERIAL,
+            'u_DiffuseScale1': Shader3D$1.PERIOD_MATERIAL,
+            'u_DiffuseScale2': Shader3D$1.PERIOD_MATERIAL,
+            'u_DiffuseScale3': Shader3D$1.PERIOD_MATERIAL,
+            'u_DiffuseScale4': Shader3D$1.PERIOD_MATERIAL,
+            'u_DiffuseScale5': Shader3D$1.PERIOD_MATERIAL
+        };
         var customTerrianShader = Shader3D$1.add("CustomTerrainShader");
         var subShader = new SubShader(attributeMap, uniformMap);
         customTerrianShader.addSubShader(subShader);
@@ -595,7 +613,10 @@
                     //不能正确指向目标
                     // Laya.Quaternion.lookAt(transform.position, lookAtPoint32, new Laya.Vector3(0, 1, 0), rotation);
                     // this.player.transform.localRotation = rotation;
-                    // this.player.transform.lookAt(lookAtPoint32, new Laya.Vector3(0, 1, 0), false);
+                    this.player.transform.lookAt(lookAtPoint32, new Laya.Vector3(0, 1, 0), false);
+                    let forward = new Vector3();
+                    this.player.transform.getForward(forward);
+                    console.log("for ward", forward);
                     // this.player.transform.rotate(new Vector3(0, 180, 0), false, false);//中心对称取反一下
                     console.log("pos", this.player.transform.position);
                     let newPos = new Vector3();
@@ -613,7 +634,7 @@
             if (GameManager.Instance.sceneData.autoMoveDir != 9999) {
                 let transform = this.player.transform;
                 this.player.transform.position = this.lastPos;
-                console.log("new pos  1", transform.position.x - this.lastPos.x);
+                // console.log("new pos  1", transform.position.x - this.lastPos.x)
                 // console.log("autoMoveDir", GameManager.Instance.sceneData.autoMoveDir)
                 // 弧度 = (π × 角度) / 180
                 // 角度 = (180×弧度) / π
@@ -661,7 +682,7 @@
                 // 当看 1 -1 时  人物实际上看的是 -1 -1
                 Laya.Quaternion.lookAt(transform.position, lookAtPoint, new Laya.Vector3(0, 1, 0), rotation);
                 this.player.transform.localRotation = rotation;
-                console.log("new pos  2", this.player.transform.position.x - this.lastPos.x);
+                // console.log("new pos  2", this.player.transform.position.x - this.lastPos.x)
                 // console.log("local rotation 2", sz, sx, lookAtPoint, this.player.transform.localRotation);
                 // 方法3 rotate //不行 这样会一直转下去
                 // this.player.transform.rotate(new Vector3(0, rotateAngle, 0), false, false)
@@ -670,7 +691,7 @@
                 // (this.owner as Laya.Sprite3D).transform.translate(new Laya.Vector3(1/600, 0, -1/600), true);
                 let newPos = new Vector3();
                 Vector3.add(transform.position, new Vector3(sx / 10, 0, sz / 10), newPos);
-                console.log("new pos  3", newPos.x - this.lastPos.x);
+                // console.log("new pos  3", newPos.x - this.lastPos.x)
                 // this.player.transform.position = newPos
                 this.player.transform.translate(new Vector3(sx / 10, 0, sz / 10), true);
                 this.lastPos = newPos;
@@ -687,6 +708,8 @@
             // console.log("player collision", collision)
         }
     }
+    // 另外有个帖子也说道了朝向这个问题
+    // https://ask.layabox.com/question/38719
     //# sourceMappingURL=RoleMoveScript.js.map
 
     var Vector3$1 = Laya.Vector3;
@@ -717,6 +740,14 @@
                 // 不懂要这一步做啥...不是已经clone了么...
                 this.camera.transform.localRotation = this.camera.transform.localRotation;
                 // console.log("rotation   3", this.camera.transform.localRotation)
+                let forward = new Vector3$1();
+                this.camera.transform.getForward(forward);
+                let scaleFactor = 10;
+                let cubeDistance = new Vector3$1(forward.x * scaleFactor, 3, forward.y * scaleFactor);
+                let cuePos = new Vector3$1();
+                Vector3$1.add(this.camera.transform.position, cubeDistance, cuePos);
+                this.camCube.transform.position = cuePos;
+                console.log("forward", forward, cuePos);
             }
         }
         /**
@@ -731,6 +762,7 @@
             this.camera = this.owner;
             this.role3D = GameManager.Instance.role3D;
             this.lastRoleTransform = this.role3D.transform.position;
+            this.camCube = GameManager.Instance.camCube;
         }
         /**
          * @inheritDoc
@@ -772,6 +804,7 @@
             Laya.stage.off(Laya.Event.RIGHT_MOUSE_UP, this, this.rightMouseUp);
         }
         rightMouseDown(e) {
+            // 根据四元数得到欧拉角
             this.camera.transform.localRotation.getYawPitchRoll(this.yawPitchRoll);
             //如果e 是 Event 则应该这样获取到在stage上的位置 Laya.stage.mouseX;
             this.lastMouseX = e.stageX;
@@ -823,7 +856,6 @@
             this.camera.transform.translate(this._tempVector3, false);
         }
     }
-    //# sourceMappingURL=CameraFollowScript.js.map
 
     class GlobalConfig {
     }
@@ -896,6 +928,9 @@
                 //相机视角控制组件(脚本),
                 // camera.addComponent(CameraMoveScript);
                 this._scene.addChild(camera); // camera 也有scene 属
+                let camCube = scene.getChildByName("Cube");
+                this._scene.addChild(camCube);
+                GameManager.Instance.camCube = camCube;
                 // 调整了摄像头的方位 目前看到的是这样的
                 // x
                 // ^
@@ -926,7 +961,6 @@
         loadTerrain(desert) {
             // 获取terrain // terrain 在console 中显示的类型就是 MeshSprite3D
             var terrain = desert.getChildByName("Terrain");
-            console.log("terrain", terrain);
             Mesh.load("res/LayaScene_DesertScene_mobile/Conventional/terrain/terrain_Terrain.lm", Laya.Handler.create(this, function (mesh) {
                 terrain.meshRenderer.sharedMaterial = createTerrainMaterial();
             }));
@@ -945,11 +979,11 @@
             let kyle = desert.getChildByName("RobotKyle");
             console.log("kyle", kyle.transform.position);
             let kyle1 = desert.getChildByName("RobotKyle (1)");
-            console.log("kyle1", kyle1.transform.position);
+            // console.log("kyle1", kyle1.transform.position)
             let kyle2 = desert.getChildByName("RobotKyle (2)");
-            console.log("kyle2", kyle2.transform.position);
+            // console.log("kyle2", kyle2.transform.position)
             let roboto = desert.getChildByName("Roboto");
-            console.log("roboto", roboto.transform.position);
+            // console.log("roboto", roboto.transform.position)
         }
         morePlants(desert) {
             let plants = desert.getChildByName("Plants");
@@ -972,12 +1006,10 @@
             player.addComponent(RoleMoveScript);
         }
     }
-    //# sourceMappingURL=GameScene.js.map
 
-    console.log("main after game config");
     class Main {
         constructor() {
-            //根据IDE设置初始化引擎		
+            //根据IDE设置初始化引擎
             if (window["Laya3D"])
                 Laya3D.init(GameConfig.width, GameConfig.height);
             else
@@ -1006,7 +1038,6 @@
         }
         onConfigLoaded() {
             //加载IDE指定的场景
-            console.log("main open start");
             // 下面加载的场景是 gameScene
             // 这个场景绑定的ts 是GameUI
             // 调用这个语句之后 GameUI 的 constructor 才会执行

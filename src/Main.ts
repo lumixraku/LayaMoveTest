@@ -2,11 +2,10 @@ import GameConfig from "./GameConfig"; // 页面长宽高 // start Scene
 import GlobalConfig from "./GlobalConfig"
 import SceneManager from "./script/SceneManager";
 import GameScene from "./script/GameScene"
-console.log("main after game config")
 
 class Main {
 	constructor() {
-		//根据IDE设置初始化引擎		
+		//根据IDE设置初始化引擎
 		if (window["Laya3D"]) Laya3D.init(GameConfig.width, GameConfig.height);
 		else Laya.init(GameConfig.width, GameConfig.height, Laya["WebGL"]);
 		Laya["Physics"] && Laya["Physics"].enable();
@@ -37,14 +36,13 @@ class Main {
 
 	onConfigLoaded(): void {
 		//加载IDE指定的场景
-		console.log("main open start")
 		// 下面加载的场景是 gameScene
 		// 这个场景绑定的ts 是GameUI
 		// 调用这个语句之后 GameUI 的 constructor 才会执行
 		// GameConfig.startScene && Laya.Scene.open(GameConfig.startScene);
 
 		new GameScene()
-		
+
 	}
 }
 //激活启动类

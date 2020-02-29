@@ -27,6 +27,4 @@ export default class GameConfig{
         // reg("script/GameUI.ts",GameUI);
     // }
 }
-console.log("game config init")
 // GameConfig.init();
-
