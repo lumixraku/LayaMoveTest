@@ -6,7 +6,7 @@ import Vector2 = Laya.Vector2;
 export { createTerrainMaterial }
 function createTerrainMaterial(): CustomTerrainMaterial {
     var customMaterial: CustomTerrainMaterial = new CustomTerrainMaterial();
-    Texture2D.load("res/LayaScene_DesertScene_mobile/Conventional/terrain/splatalpha 0.png", Laya.Handler.create(this, function (tex: Texture2D): void {
+    Texture2D.load("res/LayaScene_DesertScene_mobile/Conventional/terrain/splatAlphaTexture.png", Laya.Handler.create(this, function (tex: Texture2D): void {
         customMaterial.splatAlphaTexture = tex;
     }));
     Texture2D.load("res/LayaScene_DesertScene_mobile/Conventional/terrain/Ground1.png", Laya.Handler.create(this, function (tex: Texture2D): void {

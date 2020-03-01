@@ -14,6 +14,7 @@ import GameManager from "./GameManager"
 export default  class GameScene extends Laya.Scene3D {
     private _scene: Laya.Scene3D;
     private _camera: Laya.Camera;
+    private _dlight: Laya.DirectionLight;
     constructor() {
         super();
 
@@ -48,13 +49,11 @@ export default  class GameScene extends Laya.Scene3D {
 
 
 
-
-
-            // 使用Unity 中的光照
-
-            let dLight: Laya.DirectionLight = scene.getChildByName("Directional Light") as Laya.DirectionLight;
-            this._scene.addChild(dLight);
             let desert: Laya.Sprite3D = scene.getChildByName("DesertScene") as Laya.Sprite3D
+            this.loadLight(desert);
+
+
+
             this.loadTerrain(desert)
             this.morePlants(desert)
             this.playerControl(desert)
@@ -70,6 +69,36 @@ export default  class GameScene extends Laya.Scene3D {
     }
     initShader() {
         customTerrianShader()
+    }
+
+
+    loadLight(desert: Laya.Sprite3D) {
+
+        // 使用Unity 中的光照
+
+        let dLight: Laya.DirectionLight = this._scene.getChildByName("Directional Light") as Laya.DirectionLight;
+        dLight.color = new Laya.Vector3(0, 1, 1);
+        dLight._direction = new Laya.Vector3(0.5, -1, 0);
+        dLight.shadow = true;
+        dLight.shadowDistance = 3000;
+        dLight.shadowResolution = 4096;
+        dLight.shadowPSSMCount = 1;
+        dLight.shadowPCFType = 1;
+        dLight.shadowResolution = 2048;
+        this._scene.addChild(dLight);
+
+        // let wall: Laya.Scene3D = desert.getChildByName("walls").getChildByName("wall1") as Laya.Sprite3D;
+
+        // 使用自创建的light
+        // this._dlight = this.scene.addChild(new Laya.DirectionLight());
+        // this._dlight.color = new Laya.Vector3(0, 1, 1);
+        // // this._dlight.transform.translate(new Laya.Vector3(-2.165527, 2.193848, -3.087891));
+        // this._dlight._direction = new Laya.Vector3(0.3, -1, 0);
+        // this._dlight.shadow = true;
+        // this._dlight.shadowDistance = 45;
+        // this._dlight.shadowPSSMCount = 1;
+        // this._dlight.shadowPCFType = 1;
+        // this._dlight.shadowResolution = 2048;
     }
 
 

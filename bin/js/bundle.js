@@ -243,7 +243,7 @@
     var Vector2 = Laya.Vector2;
     function createTerrainMaterial() {
         var customMaterial = new CustomTerrainMaterial();
-        Texture2D.load("res/LayaScene_DesertScene_mobile/Conventional/terrain/splatalpha 0.png", Laya.Handler.create(this, function (tex) {
+        Texture2D.load("res/LayaScene_DesertScene_mobile/Conventional/terrain/splatAlphaTexture.png", Laya.Handler.create(this, function (tex) {
             customMaterial.splatAlphaTexture = tex;
         }));
         Texture2D.load("res/LayaScene_DesertScene_mobile/Conventional/terrain/Ground1.png", Laya.Handler.create(this, function (tex) {
@@ -856,6 +856,7 @@
             this.camera.transform.translate(this._tempVector3, false);
         }
     }
+    //# sourceMappingURL=CameraFollowScript.js.map
 
     class GlobalConfig {
     }
@@ -940,10 +941,8 @@
                 // |
                 // |
                 // +------------> z
-                // 使用Unity 中的光照
-                let dLight = scene.getChildByName("Directional Light");
-                this._scene.addChild(dLight);
                 let desert = scene.getChildByName("DesertScene");
+                this.loadLight(desert);
                 this.loadTerrain(desert);
                 this.morePlants(desert);
                 this.playerControl(desert);
@@ -957,6 +956,30 @@
         }
         initShader() {
             customTerrianShader();
+        }
+        loadLight(desert) {
+            // 使用Unity 中的光照
+            let dLight = this._scene.getChildByName("Directional Light");
+            dLight.color = new Laya.Vector3(0, 1, 1);
+            dLight._direction = new Laya.Vector3(0.5, -1, 0);
+            dLight.shadow = true;
+            dLight.shadowDistance = 3000;
+            dLight.shadowResolution = 4096;
+            dLight.shadowPSSMCount = 1;
+            dLight.shadowPCFType = 1;
+            dLight.shadowResolution = 2048;
+            this._scene.addChild(dLight);
+            // let wall: Laya.Scene3D = desert.getChildByName("walls").getChildByName("wall1") as Laya.Sprite3D;
+            // 使用自创建的light
+            // this._dlight = this.scene.addChild(new Laya.DirectionLight());
+            // this._dlight.color = new Laya.Vector3(0, 1, 1);
+            // // this._dlight.transform.translate(new Laya.Vector3(-2.165527, 2.193848, -3.087891));
+            // this._dlight._direction = new Laya.Vector3(0.3, -1, 0);
+            // this._dlight.shadow = true;
+            // this._dlight.shadowDistance = 45;
+            // this._dlight.shadowPSSMCount = 1;
+            // this._dlight.shadowPCFType = 1;
+            // this._dlight.shadowResolution = 2048;
         }
         loadTerrain(desert) {
             // 获取terrain // terrain 在console 中显示的类型就是 MeshSprite3D
@@ -1006,6 +1029,7 @@
             player.addComponent(RoleMoveScript);
         }
     }
+    //# sourceMappingURL=GameScene.js.map
 
     class Main {
         constructor() {
