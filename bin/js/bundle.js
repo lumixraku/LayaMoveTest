@@ -1029,7 +1029,6 @@
             player.addComponent(RoleMoveScript);
         }
     }
-    //# sourceMappingURL=GameScene.js.map
 
     class Main {
         constructor() {
@@ -1072,7 +1071,6 @@
     //激活启动类
     new Main();
     // layaMaxUI ---> GameUI ---> GameConfig ----> Main
-    //# sourceMappingURL=Main.js.map
 
 }());
 //# sourceMappingURL=bundle.js.map
