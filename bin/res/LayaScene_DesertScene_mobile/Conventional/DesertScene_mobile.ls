@@ -15911,6 +15911,65 @@
 									}
 								],
 								"child":[]
+							},
+							{
+								"type":"MeshSprite3D",
+								"instanceID":481,
+								"props":{
+									"name":"wall2",
+									"active":true,
+									"isStatic":false,
+									"layer":0,
+									"position":[
+										-24.64,
+										11.69,
+										-9.17
+									],
+									"rotation":[
+										0,
+										0,
+										0,
+										-1
+									],
+									"scale":[
+										1,
+										1,
+										1
+									],
+									"meshPath":"Library/unity default resources-Cube.lm",
+									"enableRender":true,
+									"materials":[
+										{
+											"type":"Laya.BlinnPhongMaterial",
+											"path":"Resources/unity_builtin_extra.lmat"
+										}
+									]
+								},
+								"components":[
+									{
+										"type":"PhysicsCollider",
+										"restitution":0,
+										"friction":0.5,
+										"rollingFriction":0,
+										"shapes":[
+											{
+												"type":"BoxColliderShape",
+												"center":[
+													0,
+													0,
+													0
+												],
+												"size":[
+													1,
+													1,
+													1
+												]
+											}
+										],
+										"isTrigger":false
+									}
+								],
+								"child":[]
 							}
 						]
 					}
@@ -15918,7 +15977,7 @@
 			},
 			{
 				"type":"Camera",
-				"instanceID":481,
+				"instanceID":482,
 				"props":{
 					"name":"Main Camera",
 					"active":true,
@@ -15965,7 +16024,7 @@
 			},
 			{
 				"type":"Sprite3D",
-				"instanceID":482,
+				"instanceID":483,
 				"props":{
 					"name":"Lineup",
 					"active":true,
@@ -15992,7 +16051,7 @@
 				"child":[
 					{
 						"type":"Sprite3D",
-						"instanceID":483,
+						"instanceID":484,
 						"props":{
 							"name":"aloe_m",
 							"active":true,
@@ -16019,7 +16078,7 @@
 						"child":[
 							{
 								"type":"MeshSprite3D",
-								"instanceID":484,
+								"instanceID":485,
 								"props":{
 									"name":"default",
 									"active":true,
@@ -16056,7 +16115,7 @@
 					},
 					{
 						"type":"Sprite3D",
-						"instanceID":485,
+						"instanceID":486,
 						"props":{
 							"name":"cactus01_m",
 							"active":true,
@@ -16083,7 +16142,7 @@
 						"child":[
 							{
 								"type":"MeshSprite3D",
-								"instanceID":486,
+								"instanceID":487,
 								"props":{
 									"name":"default",
 									"active":true,
@@ -16120,7 +16179,7 @@
 					},
 					{
 						"type":"Sprite3D",
-						"instanceID":487,
+						"instanceID":488,
 						"props":{
 							"name":"cactus02_m",
 							"active":true,
@@ -16147,7 +16206,7 @@
 						"child":[
 							{
 								"type":"MeshSprite3D",
-								"instanceID":488,
+								"instanceID":489,
 								"props":{
 									"name":"default",
 									"active":true,
@@ -16184,7 +16243,7 @@
 					},
 					{
 						"type":"Sprite3D",
-						"instanceID":489,
+						"instanceID":490,
 						"props":{
 							"name":"cactus03_m",
 							"active":true,
@@ -16211,7 +16270,7 @@
 						"child":[
 							{
 								"type":"MeshSprite3D",
-								"instanceID":490,
+								"instanceID":491,
 								"props":{
 									"name":"default",
 									"active":true,
@@ -16248,7 +16307,7 @@
 					},
 					{
 						"type":"Sprite3D",
-						"instanceID":491,
+						"instanceID":492,
 						"props":{
 							"name":"rock08_m",
 							"active":true,
@@ -16275,7 +16334,7 @@
 						"child":[
 							{
 								"type":"MeshSprite3D",
-								"instanceID":492,
+								"instanceID":493,
 								"props":{
 									"name":"default",
 									"active":true,
@@ -16312,7 +16371,7 @@
 					},
 					{
 						"type":"Sprite3D",
-						"instanceID":493,
+						"instanceID":494,
 						"props":{
 							"name":"rock07_m",
 							"active":true,
@@ -16339,7 +16398,7 @@
 						"child":[
 							{
 								"type":"MeshSprite3D",
-								"instanceID":494,
+								"instanceID":495,
 								"props":{
 									"name":"default",
 									"active":true,
@@ -16376,7 +16435,7 @@
 					},
 					{
 						"type":"Sprite3D",
-						"instanceID":495,
+						"instanceID":496,
 						"props":{
 							"name":"rock06_m",
 							"active":true,
@@ -16403,7 +16462,7 @@
 						"child":[
 							{
 								"type":"MeshSprite3D",
-								"instanceID":496,
+								"instanceID":497,
 								"props":{
 									"name":"default",
 									"active":true,
@@ -16440,7 +16499,7 @@
 					},
 					{
 						"type":"Sprite3D",
-						"instanceID":497,
+						"instanceID":498,
 						"props":{
 							"name":"rock05_m",
 							"active":true,
@@ -16467,7 +16526,7 @@
 						"child":[
 							{
 								"type":"MeshSprite3D",
-								"instanceID":498,
+								"instanceID":499,
 								"props":{
 									"name":"default",
 									"active":true,
@@ -16504,7 +16563,7 @@
 					},
 					{
 						"type":"Sprite3D",
-						"instanceID":499,
+						"instanceID":500,
 						"props":{
 							"name":"rock04_m",
 							"active":true,
@@ -16531,7 +16590,7 @@
 						"child":[
 							{
 								"type":"MeshSprite3D",
-								"instanceID":500,
+								"instanceID":501,
 								"props":{
 									"name":"default",
 									"active":true,
@@ -16568,7 +16627,7 @@
 					},
 					{
 						"type":"Sprite3D",
-						"instanceID":501,
+						"instanceID":502,
 						"props":{
 							"name":"rock03_m",
 							"active":true,
@@ -16595,7 +16654,7 @@
 						"child":[
 							{
 								"type":"MeshSprite3D",
-								"instanceID":502,
+								"instanceID":503,
 								"props":{
 									"name":"default",
 									"active":true,
@@ -16632,7 +16691,7 @@
 					},
 					{
 						"type":"Sprite3D",
-						"instanceID":503,
+						"instanceID":504,
 						"props":{
 							"name":"rock02_m",
 							"active":true,
@@ -16659,7 +16718,7 @@
 						"child":[
 							{
 								"type":"MeshSprite3D",
-								"instanceID":504,
+								"instanceID":505,
 								"props":{
 									"name":"default",
 									"active":true,
@@ -16696,7 +16755,7 @@
 					},
 					{
 						"type":"Sprite3D",
-						"instanceID":505,
+						"instanceID":506,
 						"props":{
 							"name":"rock01_m",
 							"active":true,
@@ -16723,7 +16782,7 @@
 						"child":[
 							{
 								"type":"MeshSprite3D",
-								"instanceID":506,
+								"instanceID":507,
 								"props":{
 									"name":"default",
 									"active":true,
@@ -16760,7 +16819,7 @@
 					},
 					{
 						"type":"MeshSprite3D",
-						"instanceID":507,
+						"instanceID":508,
 						"props":{
 							"name":"Quad",
 							"active":true,
@@ -16811,7 +16870,7 @@
 			},
 			{
 				"type":"Sprite3D",
-				"instanceID":508,
+				"instanceID":509,
 				"props":{
 					"name":"Cube",
 					"active":true,
@@ -16838,7 +16897,7 @@
 				"child":[
 					{
 						"type":"MeshSprite3D",
-						"instanceID":509,
+						"instanceID":510,
 						"props":{
 							"name":"CubeZ",
 							"active":true,
@@ -16897,7 +16956,7 @@
 					},
 					{
 						"type":"MeshSprite3D",
-						"instanceID":510,
+						"instanceID":511,
 						"props":{
 							"name":"CubeX",
 							"active":true,

@@ -78,17 +78,19 @@ export default  class GameScene extends Laya.Scene3D {
 
         let dLight: Laya.DirectionLight = this._scene.getChildByName("Directional Light") as Laya.DirectionLight;
         dLight.color = new Laya.Vector3(0, 1, 1);
-        dLight._direction = new Laya.Vector3(0.5, -1, 0);
+        // dLight._direction = new Laya.Vector3(0.5, -1, 0);
+
+        //这个颜色会覆盖 光的颜色  表示物体接受到这个光之后的漫反射颜色
+        // dLight.diffuseColor = new Laya.Vector3(0, 0, 0);
+        //添加灯光投影
         dLight.shadow = true;
-        dLight.shadowDistance = 3000;
-        dLight.shadowResolution = 4096;
+        dLight.shadowDistance = 45;
+        dLight.shadowResolution = 2048;
         dLight.shadowPSSMCount = 1;
         dLight.shadowPCFType = 1;
-        dLight.shadowResolution = 2048;
         this._scene.addChild(dLight);
 
         // let wall: Laya.Scene3D = desert.getChildByName("walls").getChildByName("wall1") as Laya.Sprite3D;
-
         // 使用自创建的light
         // this._dlight = this.scene.addChild(new Laya.DirectionLight());
         // this._dlight.color = new Laya.Vector3(0, 1, 1);
@@ -106,6 +108,7 @@ export default  class GameScene extends Laya.Scene3D {
 
         // 获取terrain // terrain 在console 中显示的类型就是 MeshSprite3D
         var terrain: Laya.MeshSprite3D = desert.getChildByName("Terrain") as Laya.MeshSprite3D
+        terrain.meshRenderer.receiveShadow = true
 
 
         Mesh.load("res/LayaScene_DesertScene_mobile/Conventional/terrain/terrain_Terrain.lm", Laya.Handler.create(this, function (mesh: Mesh): void {
@@ -135,6 +138,11 @@ export default  class GameScene extends Laya.Scene3D {
         let roboto = desert.getChildByName("Roboto") as Laya.Sprite3D
         // console.log("roboto", roboto.transform.position)
 
+        let wall1: Laya.MeshSprite3D = desert.getChildByName("wall").getChildByName("wall1") as Laya.MeshSprite3D;
+        wall1.meshRenderer.receiveShadow = true;
+        console.log("wall1", wall1)
+
+
     }
 
     morePlants(desert: Laya.Sprite3D) {
@@ -154,6 +162,13 @@ export default  class GameScene extends Laya.Scene3D {
         let player: Laya.Sprite3D = desert.getChildByName("unitychan") as Laya.Sprite3D
         GameManager.Instance.role3D = player;
         console.log("player", player.transform.position)
+
+
+        let playerRootMesh = player.getChildAt(1) as Laya.Sprite3D
+        for (let i = 0; i < playerRootMesh.numChildren; i++) {
+            let oneMesh = playerRootMesh.getChildAt(i) as Laya.SkinnedMeshSprite3D
+            oneMesh.skinnedMeshRenderer.castShadow = true
+        }
 
         Laya.stage.addChild(new JoyBoxUI());
         new VirtualJoy(new VirtualJoyUI());

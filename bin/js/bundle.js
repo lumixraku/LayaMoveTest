@@ -961,13 +961,15 @@
             // 使用Unity 中的光照
             let dLight = this._scene.getChildByName("Directional Light");
             dLight.color = new Laya.Vector3(0, 1, 1);
-            dLight._direction = new Laya.Vector3(0.5, -1, 0);
+            // dLight._direction = new Laya.Vector3(0.5, -1, 0);
+            //这个颜色会覆盖 光的颜色  表示物体接受到这个光之后的漫反射颜色
+            // dLight.diffuseColor = new Laya.Vector3(0, 0, 0);
+            //添加灯光投影
             dLight.shadow = true;
-            dLight.shadowDistance = 3000;
-            dLight.shadowResolution = 4096;
+            dLight.shadowDistance = 45;
+            dLight.shadowResolution = 2048;
             dLight.shadowPSSMCount = 1;
             dLight.shadowPCFType = 1;
-            dLight.shadowResolution = 2048;
             this._scene.addChild(dLight);
             // let wall: Laya.Scene3D = desert.getChildByName("walls").getChildByName("wall1") as Laya.Sprite3D;
             // 使用自创建的light
@@ -984,6 +986,7 @@
         loadTerrain(desert) {
             // 获取terrain // terrain 在console 中显示的类型就是 MeshSprite3D
             var terrain = desert.getChildByName("Terrain");
+            terrain.meshRenderer.receiveShadow = true;
             Mesh.load("res/LayaScene_DesertScene_mobile/Conventional/terrain/terrain_Terrain.lm", Laya.Handler.create(this, function (mesh) {
                 terrain.meshRenderer.sharedMaterial = createTerrainMaterial();
             }));
@@ -1007,6 +1010,9 @@
             // console.log("kyle2", kyle2.transform.position)
             let roboto = desert.getChildByName("Roboto");
             // console.log("roboto", roboto.transform.position)
+            let wall1 = desert.getChildByName("wall").getChildByName("wall1");
+            wall1.meshRenderer.receiveShadow = true;
+            console.log("wall1", wall1);
         }
         morePlants(desert) {
             let plants = desert.getChildByName("Plants");
@@ -1023,12 +1029,18 @@
             let player = desert.getChildByName("unitychan");
             GameManager.Instance.role3D = player;
             console.log("player", player.transform.position);
+            let playerRootMesh = player.getChildAt(1);
+            for (let i = 0; i < playerRootMesh.numChildren; i++) {
+                let oneMesh = playerRootMesh.getChildAt(i);
+                oneMesh.skinnedMeshRenderer.castShadow = true;
+            }
             Laya.stage.addChild(new JoyBoxUI());
             new VirtualJoy(new VirtualJoyUI());
             this._camera.addComponent(CameraFollowScript);
             player.addComponent(RoleMoveScript);
         }
     }
+    //# sourceMappingURL=GameScene.js.map
 
     class Main {
         constructor() {
