@@ -24,21 +24,37 @@
     // GameConfig.init();
     //# sourceMappingURL=GameConfig.js.map
 
-    var Material = Laya.BaseMaterial;
+    var ShadowGLSL = "#ifndef GRAPHICS_API_GLES3\n\t#define NO_NATIVE_SHADOWMAP\n#endif\n\n#ifdef NO_NATIVE_SHADOWMAP\n\t#define TEXTURE2D_SHADOW(textureName) uniform mediump sampler2D textureName\n\t#define SAMPLE_TEXTURE2D_SHADOW(textureName, coord3) (texture2D(textureName,coord3.xy).r<coord3.z?0.0:1.0)\n\t#define TEXTURE2D_SHADOW_PARAM(shadowMap) sampler2D shadowMap\n#else\n\t#define TEXTURE2D_SHADOW(textureName) uniform mediump sampler2DShadow textureName\n\t#define SAMPLE_TEXTURE2D_SHADOW(textureName, coord3) texture2D(textureName,coord3)\n\t#define TEXTURE2D_SHADOW_PARAM(shadowMap) sampler2DShadow shadowMap\n#endif\n\n#include \"ShadowSampleTent.glsl\"\n\nTEXTURE2D_SHADOW(u_ShadowMap);\nuniform vec4 u_ShadowMapSize;\nuniform vec4 u_ShadowBias; // x: depth bias, y: normal bias\nuniform vec4 u_ShadowParams; // x: shadowStrength\nuniform mat4 u_ShadowLightViewProjects[4];\nuniform vec4 u_shadowPSSMDistance;\n\nvec4 getShadowCoord(vec4 positionWS)\n{\n\treturn u_ShadowLightViewProjects[0] * positionWS;\n}\n\nfloat sampleShdowMapFiltered4(TEXTURE2D_SHADOW_PARAM(shadowMap),vec3 shadowCoord,vec4 shadowMapSize)\n{\n\tfloat attenuation;\n\tvec4 attenuation4;\n\tvec2 offset=shadowMapSize.xy/2.0;\n\tvec3 shadowCoord0=shadowCoord + vec3(-offset,0.0);\n\tvec3 shadowCoord1=shadowCoord + vec3(offset.x,-offset.y,0.0);\n\tvec3 shadowCoord2=shadowCoord + vec3(-offset.x,offset.y,0.0);\n\tvec3 shadowCoord3=shadowCoord + vec3(offset,0.0);\n    attenuation4.x = SAMPLE_TEXTURE2D_SHADOW(shadowMap, shadowCoord0);\n    attenuation4.y = SAMPLE_TEXTURE2D_SHADOW(shadowMap, shadowCoord1);\n    attenuation4.z = SAMPLE_TEXTURE2D_SHADOW(shadowMap, shadowCoord2);\n    attenuation4.w = SAMPLE_TEXTURE2D_SHADOW(shadowMap, shadowCoord3);\n\tattenuation = dot(attenuation4, vec4(0.25));\n\treturn attenuation;\n}\n\nfloat sampleShdowMapFiltered9(TEXTURE2D_SHADOW_PARAM(shadowMap),vec3 shadowCoord,vec4 shadowmapSize)\n{\n\tfloat attenuation;\n\tfloat fetchesWeights[9];\n    vec2 fetchesUV[9];\n    sampleShadowComputeSamplesTent5x5(shadowmapSize, shadowCoord.xy, fetchesWeights, fetchesUV);\n\tattenuation = fetchesWeights[0] * SAMPLE_TEXTURE2D_SHADOW(shadowMap, vec3(fetchesUV[0].xy, shadowCoord.z));\n    attenuation += fetchesWeights[1] * SAMPLE_TEXTURE2D_SHADOW(shadowMap, vec3(fetchesUV[1].xy, shadowCoord.z));\n    attenuation += fetchesWeights[2] * SAMPLE_TEXTURE2D_SHADOW(shadowMap, vec3(fetchesUV[2].xy, shadowCoord.z));\n    attenuation += fetchesWeights[3] * SAMPLE_TEXTURE2D_SHADOW(shadowMap, vec3(fetchesUV[3].xy, shadowCoord.z));\n    attenuation += fetchesWeights[4] * SAMPLE_TEXTURE2D_SHADOW(shadowMap, vec3(fetchesUV[4].xy, shadowCoord.z));\n    attenuation += fetchesWeights[5] * SAMPLE_TEXTURE2D_SHADOW(shadowMap, vec3(fetchesUV[5].xy, shadowCoord.z));\n    attenuation += fetchesWeights[6] * SAMPLE_TEXTURE2D_SHADOW(shadowMap, vec3(fetchesUV[6].xy, shadowCoord.z));\n    attenuation += fetchesWeights[7] * SAMPLE_TEXTURE2D_SHADOW(shadowMap, vec3(fetchesUV[7].xy, shadowCoord.z));\n    attenuation += fetchesWeights[8] * SAMPLE_TEXTURE2D_SHADOW(shadowMap, vec3(fetchesUV[8].xy, shadowCoord.z));\n\treturn attenuation;\n}\n\nfloat sampleShadowmap(vec4 shadowCoord)\n{\n\tshadowCoord.xyz /= shadowCoord.w;\n\tfloat attenuation = 1.0;\n\tif(shadowCoord.z > 0.0 && shadowCoord.z < 1.0)\n\t{\n\t\t#if defined(SHADOW_SOFT_SHADOW_HIGH)\n\t\t\tattenuation = sampleShdowMapFiltered9(u_ShadowMap,shadowCoord.xyz,u_ShadowMapSize);\n\t\t#elif defined(SHADOW_SOFT_SHADOW_LOW)\n\t\t\tattenuation = sampleShdowMapFiltered4(u_ShadowMap,shadowCoord.xyz,u_ShadowMapSize);\n\t\t#else\n\t\t\tattenuation = SAMPLE_TEXTURE2D_SHADOW(u_ShadowMap,shadowCoord.xyz);\n\t\t#endif\n\t\tattenuation = mix(1.0,attenuation,u_ShadowParams.x);//shadowParams.x:shadow strength\n\t}\n\treturn attenuation;\n}\n\nvec3 applyShadowBias(vec3 positionWS, vec3 normalWS, vec3 lightDirection)\n{\n    float invNdotL = 1.0 - clamp(dot(lightDirection, normalWS),0.0,1.0);\n    float scale = invNdotL * u_ShadowBias.y;\n\n    // normal bias is negative since we want to apply an inset normal offset\n    positionWS += lightDirection * vec3(u_ShadowBias);\n    positionWS += normalWS * vec3(scale);\n    return positionWS;\n}\n";
+
+    var ShadowSampleTentGLSL = "// ------------------------------------------------------------------\n//  PCF Filtering Tent Functions\n// ------------------------------------------------------------------\n\n// Assuming a isoceles right angled triangle of height \"triangleHeight\" (as drawn below).\n// This function return the area of the triangle above the first texel(in Y the first texel).\n//\n// |\\      <-- 45 degree slop isosceles right angled triangle\n// | \\\n// ----    <-- length of this side is \"triangleHeight\"\n// _ _ _ _ <-- texels\nfloat sampleShadowGetIRTriangleTexelArea(float triangleHeight)\n{\n    return triangleHeight - 0.5;\n}\n\n// Assuming a isoceles triangle of 1.5 texels height and 3 texels wide lying on 4 texels.\n// This function return the area of the triangle above each of those texels.\n//    |    <-- offset from -0.5 to 0.5, 0 meaning triangle is exactly in the center\n//   / \\   <-- 45 degree slop isosceles triangle (ie tent projected in 2D)\n//  /   \\\n// _ _ _ _ <-- texels\n// X Y Z W <-- result indices (in computedArea.xyzw and computedAreaUncut.xyzw)\n// Top point at (right,top) in a texel,left bottom point at (middle,middle) in a texel,right bottom point at (middle,middle) in a texel.\nvoid sampleShadowGetTexelAreasTent3x3(float offset, out vec4 computedArea, out vec4 computedAreaUncut)\n{\n    // Compute the exterior areas,a and h is same.\n    float a = offset + 0.5;\n    float offsetSquaredHalved = a * a * 0.5;\n    computedAreaUncut.x = computedArea.x = offsetSquaredHalved - offset;\n    computedAreaUncut.w = computedArea.w = offsetSquaredHalved;\n\n    // Compute the middle areas\n    // For Y : We find the area in Y of as if the left section of the isoceles triangle would\n    // intersect the axis between Y and Z (ie where offset = 0).\n    computedAreaUncut.y = sampleShadowGetIRTriangleTexelArea(1.5 - offset);\n    // This area is superior to the one we are looking for if (offset < 0) thus we need to\n    // subtract the area of the triangle defined by (0,1.5-offset), (0,1.5+offset), (-offset,1.5).\n    float clampedOffsetLeft = min(offset,0.0);\n    float areaOfSmallLeftTriangle = clampedOffsetLeft * clampedOffsetLeft;\n    computedArea.y = computedAreaUncut.y - areaOfSmallLeftTriangle;\n\n    // We do the same for the Z but with the right part of the isoceles triangle\n    computedAreaUncut.z = sampleShadowGetIRTriangleTexelArea(1.5 + offset);\n    float clampedOffsetRight = max(offset,0.0);\n    float areaOfSmallRightTriangle = clampedOffsetRight * clampedOffsetRight;\n    computedArea.z = computedAreaUncut.z - areaOfSmallRightTriangle;\n}\n\n// Assuming a isoceles triangle of 2.5 texel height and 5 texels wide lying on 6 texels.\n// This function return the weight of each texels area relative to the full triangle area.\n//  /       \\\n// _ _ _ _ _ _ <-- texels\n// 0 1 2 3 4 5 <-- computed area indices (in texelsWeights[])\n// Top point at (right,top) in a texel,left bottom point at (middle,middle) in a texel,right bottom point at (middle,middle) in a texel.\nvoid sampleShadowGetTexelWeightsTent5x5(float offset, out vec3 texelsWeightsA, out vec3 texelsWeightsB)\n{\n    vec4 areaFrom3texelTriangle;\n    vec4 areaUncutFrom3texelTriangle;\n    sampleShadowGetTexelAreasTent3x3(offset, areaFrom3texelTriangle, areaUncutFrom3texelTriangle);\n\n    // Triangle slope is 45 degree thus we can almost reuse the result of the 3 texel wide computation.\n    // the 5 texel wide triangle can be seen as the 3 texel wide one but shifted up by one unit/texel.\n    // 0.16 is 1/(the triangle area)\n    texelsWeightsA.x = 0.16 * (areaFrom3texelTriangle.x);\n    texelsWeightsA.y = 0.16 * (areaUncutFrom3texelTriangle.y);\n    texelsWeightsA.z = 0.16 * (areaFrom3texelTriangle.y + 1.0);\n    texelsWeightsB.x = 0.16 * (areaFrom3texelTriangle.z + 1.0);\n    texelsWeightsB.y = 0.16 * (areaUncutFrom3texelTriangle.z);\n    texelsWeightsB.z = 0.16 * (areaFrom3texelTriangle.w);\n}\n\n// 5x5 Tent filter (45 degree sloped triangles in U and V)\nvoid sampleShadowComputeSamplesTent5x5(vec4 shadowMapTextureTexelSize, vec2 coord, out float fetchesWeights[9], out vec2 fetchesUV[9])\n{\n    // tent base is 5x5 base thus covering from 25 to 36 texels, thus we need 9 bilinear PCF fetches\n    vec2 tentCenterInTexelSpace = coord.xy * shadowMapTextureTexelSize.zw;\n    vec2 centerOfFetchesInTexelSpace = floor(tentCenterInTexelSpace + 0.5);\n    vec2 offsetFromTentCenterToCenterOfFetches = tentCenterInTexelSpace - centerOfFetchesInTexelSpace;\n\n    // find the weight of each texel based on the area of a 45 degree slop tent above each of them.\n    vec3 texelsWeightsUA, texelsWeightsUB;\n    vec3 texelsWeightsVA, texelsWeightsVB;\n    sampleShadowGetTexelWeightsTent5x5(offsetFromTentCenterToCenterOfFetches.x, texelsWeightsUA, texelsWeightsUB);\n    sampleShadowGetTexelWeightsTent5x5(offsetFromTentCenterToCenterOfFetches.y, texelsWeightsVA, texelsWeightsVB);\n\n    // each fetch will cover a group of 2x2 texels, the weight of each group is the sum of the weights of the texels\n    vec3 fetchesWeightsU = vec3(texelsWeightsUA.xz, texelsWeightsUB.y) + vec3(texelsWeightsUA.y, texelsWeightsUB.xz);\n    vec3 fetchesWeightsV = vec3(texelsWeightsVA.xz, texelsWeightsVB.y) + vec3(texelsWeightsVA.y, texelsWeightsVB.xz);\n\n    // move the PCF bilinear fetches to respect texels weights\n    vec3 fetchesOffsetsU = vec3(texelsWeightsUA.y, texelsWeightsUB.xz) / fetchesWeightsU.xyz + vec3(-2.5,-0.5,1.5);\n    vec3 fetchesOffsetsV = vec3(texelsWeightsVA.y, texelsWeightsVB.xz) / fetchesWeightsV.xyz + vec3(-2.5,-0.5,1.5);\n    fetchesOffsetsU *= shadowMapTextureTexelSize.xxx;\n    fetchesOffsetsV *= shadowMapTextureTexelSize.yyy;\n\n    vec2 bilinearFetchOrigin = centerOfFetchesInTexelSpace * shadowMapTextureTexelSize.xy;\n    fetchesUV[0] = bilinearFetchOrigin + vec2(fetchesOffsetsU.x, fetchesOffsetsV.x);\n    fetchesUV[1] = bilinearFetchOrigin + vec2(fetchesOffsetsU.y, fetchesOffsetsV.x);\n    fetchesUV[2] = bilinearFetchOrigin + vec2(fetchesOffsetsU.z, fetchesOffsetsV.x);\n    fetchesUV[3] = bilinearFetchOrigin + vec2(fetchesOffsetsU.x, fetchesOffsetsV.y);\n    fetchesUV[4] = bilinearFetchOrigin + vec2(fetchesOffsetsU.y, fetchesOffsetsV.y);\n    fetchesUV[5] = bilinearFetchOrigin + vec2(fetchesOffsetsU.z, fetchesOffsetsV.y);\n    fetchesUV[6] = bilinearFetchOrigin + vec2(fetchesOffsetsU.x, fetchesOffsetsV.z);\n    fetchesUV[7] = bilinearFetchOrigin + vec2(fetchesOffsetsU.y, fetchesOffsetsV.z);\n    fetchesUV[8] = bilinearFetchOrigin + vec2(fetchesOffsetsU.z, fetchesOffsetsV.z);\n\n    fetchesWeights[0] = fetchesWeightsU.x * fetchesWeightsV.x;\n    fetchesWeights[1] = fetchesWeightsU.y * fetchesWeightsV.x;\n    fetchesWeights[2] = fetchesWeightsU.z * fetchesWeightsV.x;\n    fetchesWeights[3] = fetchesWeightsU.x * fetchesWeightsV.y;\n    fetchesWeights[4] = fetchesWeightsU.y * fetchesWeightsV.y;\n    fetchesWeights[5] = fetchesWeightsU.z * fetchesWeightsV.y;\n    fetchesWeights[6] = fetchesWeightsU.x * fetchesWeightsV.z;\n    fetchesWeights[7] = fetchesWeightsU.y * fetchesWeightsV.z;\n    fetchesWeights[8] = fetchesWeightsU.z * fetchesWeightsV.z;\n}";
+
+    var ShadowCasterVSGLSL = "#include \"Lighting.glsl\";\n#include \"Shadow.glsl\"\n\nattribute vec4 a_Position;\nattribute vec3 a_Normal;\n\n#ifdef BONE\n\tconst int c_MaxBoneCount = 24;\n\tattribute vec4 a_BoneIndices;\n\tattribute vec4 a_BoneWeights;\n\tuniform mat4 u_Bones[c_MaxBoneCount];\n#endif\n\n#ifdef GPU_INSTANCE\n\tattribute mat4 a_WorldMat;\n#else\n\tuniform mat4 u_WorldMat;\n#endif\n\nuniform mat4 u_ViewProjection;\n\nuniform vec3 u_LightDirection;\n\n#if defined(DIFFUSEMAP)||((defined(DIRECTIONLIGHT)||defined(POINTLIGHT)||defined(SPOTLIGHT))&&(defined(SPECULARMAP)||defined(NORMALMAP)))||(defined(LIGHTMAP)&&defined(UV))\n\tattribute vec2 a_Texcoord0;\n\tvarying vec2 v_Texcoord0;\n#endif\n\nvec4 shadowCasterVertex()\n{\n\tmat4 worldMat;\n\t#ifdef GPU_INSTANCE\n\t\tworldMat = a_WorldMat;\n\t#else\n\t\tworldMat = u_WorldMat;\n\t#endif\n\t\n\t#ifdef BONE\n\t\tmat4 skinTransform = u_Bones[int(a_BoneIndices.x)] * a_BoneWeights.x;\n\t\tskinTransform += u_Bones[int(a_BoneIndices.y)] * a_BoneWeights.y;\n\t\tskinTransform += u_Bones[int(a_BoneIndices.z)] * a_BoneWeights.z;\n\t\tskinTransform += u_Bones[int(a_BoneIndices.w)] * a_BoneWeights.w;\n\t\tworldMat = worldMat * skinTransform;\n\t#endif\n\n\tvec4 positionWS = worldMat * a_Position;\n\tvec3 normalWS = normalize(a_Normal*inverse(mat3(worldMat)));//if no normalize will cause precision problem\n\n\tpositionWS.xyz = applyShadowBias(positionWS.xyz,normalWS,u_LightDirection);\n\n\tvec4 positionCS = u_ViewProjection * positionWS;\n\tpositionCS.z = max(positionCS.z, 0.0);//min ndc z is 0.0\n\n\t// //TODO没考虑UV动画呢\n\t// #if defined(DIFFUSEMAP)&&defined(ALPHATEST)\n\t// \tv_Texcoord0=a_Texcoord0;\n\t// #endif\n    return positionCS;\n}\n";
+
+    var ShadowCasterFSGLSL = "// #ifdef ALPHATEST\n// \tuniform float u_AlphaTestValue;\n// #endif\n\n// #ifdef DIFFUSEMAP\n// \tuniform sampler2D u_DiffuseTexture;\n// #endif\n\n// #if defined(DIFFUSEMAP)||((defined(DIRECTIONLIGHT)||defined(POINTLIGHT)||defined(SPOTLIGHT))&&(defined(SPECULARMAP)||defined(NORMALMAP)))\n// \tvarying vec2 v_Texcoord0;\n// #endif\n\nvec4 shadowCasterFragment()\n{\n    return vec4(0.0);\n    // #if defined(DIFFUSEMAP)&&defined(ALPHATEST)\n\t// \tfloat alpha = texture2D(u_DiffuseTexture,v_Texcoord0).w;\n\t// \tif( alpha < u_AlphaTestValue )\n\t// \t{\n\t// \t\tdiscard;\n\t// \t}\n\t// #endif\n}\n";
+
+    var TerrainShaderFS = "#ifdef GL_FRAGMENT_PRECISION_HIGH\nprecision highp float;\n#else\nprecision mediump float;\n#endif\n\nuniform sampler2D u_SplatAlphaTexture;\n\nuniform sampler2D u_DiffuseTexture1;\nuniform sampler2D u_DiffuseTexture2;\nuniform sampler2D u_DiffuseTexture3;\nuniform sampler2D u_DiffuseTexture4;\nuniform sampler2D u_DiffuseTexture5;\n\nuniform vec2 u_DiffuseScale1;\nuniform vec2 u_DiffuseScale2;\nuniform vec2 u_DiffuseScale3;\nuniform vec2 u_DiffuseScale4;\nuniform vec2 u_DiffuseScale5;\n\nvarying vec2 v_Texcoord0;\n\n#include \"Shadow.glsl\"\n#ifdef RECEIVESHADOW\n\tvarying vec4 v_ShadowCoord;\n#endif\n\n\nvoid main()\n{\n\t#ifdef CUSTOM_DETAIL_NUM1\n\t\tvec4 splatAlpha = texture2D(u_SplatAlphaTexture, v_Texcoord0);\n\t\tvec4 color1 = texture2D(u_DiffuseTexture1, v_Texcoord0 * u_DiffuseScale1);\n\t\tgl_FragColor.xyz = color1.xyz * splatAlpha.r;\n\t#elif defined(CUSTOM_DETAIL_NUM2)\n\t\tvec4 splatAlpha = texture2D(u_SplatAlphaTexture, v_Texcoord0);\n\t\tvec4 color1 = texture2D(u_DiffuseTexture1, v_Texcoord0 * u_DiffuseScale1);\n\t\tvec4 color2 = texture2D(u_DiffuseTexture2, v_Texcoord0 * u_DiffuseScale2);\n\t\tgl_FragColor.xyz = color1.xyz * splatAlpha.r + color2.xyz * (1.0 - splatAlpha.r);\n\t#elif defined(CUSTOM_DETAIL_NUM3)\n\t\tvec4 splatAlpha = texture2D(u_SplatAlphaTexture, v_Texcoord0);\n\t\tvec4 color1 = texture2D(u_DiffuseTexture1, v_Texcoord0 * u_DiffuseScale1);\n\t\tvec4 color2 = texture2D(u_DiffuseTexture2, v_Texcoord0 * u_DiffuseScale2);\n\t\tvec4 color3 = texture2D(u_DiffuseTexture3, v_Texcoord0 * u_DiffuseScale3);\n\t\tgl_FragColor.xyz = color1.xyz * splatAlpha.r  + color2.xyz * splatAlpha.g + color3.xyz * (1.0 - splatAlpha.r - splatAlpha.g);\n\t#elif defined(CUSTOM_DETAIL_NUM4)\n\t\tvec4 splatAlpha = texture2D(u_SplatAlphaTexture, v_Texcoord0);\n\t\tvec4 color1 = texture2D(u_DiffuseTexture1, v_Texcoord0 * u_DiffuseScale1);\n\t\tvec4 color2 = texture2D(u_DiffuseTexture2, v_Texcoord0 * u_DiffuseScale2);\n\t\tvec4 color3 = texture2D(u_DiffuseTexture3, v_Texcoord0 * u_DiffuseScale3);\n\t\tvec4 color4 = texture2D(u_DiffuseTexture4, v_Texcoord0 * u_DiffuseScale4);\n\t\tgl_FragColor.xyz = color1.xyz * splatAlpha.r  + color2.xyz * splatAlpha.g + color3.xyz * splatAlpha.b + color4.xyz * (1.0 - splatAlpha.r - splatAlpha.g - splatAlpha.b);\n\t#elif defined(CUSTOM_DETAIL_NUM5)\n\t\tvec4 splatAlpha = texture2D(u_SplatAlphaTexture, v_Texcoord0);\n\t\tvec4 color1 = texture2D(u_DiffuseTexture1, v_Texcoord0 * u_DiffuseScale1);\n\t\tvec4 color2 = texture2D(u_DiffuseTexture2, v_Texcoord0 * u_DiffuseScale2);\n\t\tvec4 color3 = texture2D(u_DiffuseTexture3, v_Texcoord0 * u_DiffuseScale3);\n\t\tvec4 color4 = texture2D(u_DiffuseTexture4, v_Texcoord0 * u_DiffuseScale4);\n\t\tvec4 color5 = texture2D(u_DiffuseTexture5, v_Texcoord0 * u_DiffuseScale5);\n\t\tgl_FragColor.xyz = color1.xyz * splatAlpha.r  + color2.xyz * splatAlpha.g + color3.xyz * splatAlpha.b + color4.xyz * splatAlpha.a + color5.xyz * (1.0 - splatAlpha.r - splatAlpha.g - splatAlpha.b - splatAlpha.a);\n\t#else\n\t\t//gl_FragColor.xyz = vec3(0.0, 1.0, 0.0);\n\t#endif\n\n\n}\n";
+
+    var TerrainShaderVS = "#include \"Lighting.glsl\";\nattribute vec4 a_Position;\nattribute vec2 a_Texcoord0;\nattribute vec3 a_Normal;\n\nuniform mat4 u_MvpMatrix;\nvarying vec2 v_Texcoord0;\n\nvoid main()\n{\n  gl_Position = u_MvpMatrix * a_Position;\n  v_Texcoord0 = a_Texcoord0;\n gl_Position=remapGLPositionZ(gl_Position);\n}";
+
+    var BlinnPhongMaterial = Laya.BlinnPhongMaterial;
     var Shader3D = Laya.Shader3D;
+    var VertexMesh = Laya.VertexMesh;
+    var SubShader = Laya.SubShader;
     /**
      * ...
      * @author
      */
-    class CustomTerrainMaterial extends Material {
+    class CustomTerrainMaterial extends BlinnPhongMaterial {
         constructor() {
             super();
+            this.customTerrianShader();
+            CustomTerrainMaterial.__initDefine__();
             this.setShaderName("CustomTerrainShader");
         }
         /**
          * @private
          */
-        static __init__() {
+        static __initDefine__() {
             CustomTerrainMaterial.SHADERDEFINE_DETAIL_NUM1 = Shader3D.getDefineByName("CUSTOM_DETAIL_NUM1");
             CustomTerrainMaterial.SHADERDEFINE_DETAIL_NUM2 = Shader3D.getDefineByName("CUSTOM_DETAIL_NUM2");
             CustomTerrainMaterial.SHADERDEFINE_DETAIL_NUM3 = Shader3D.getDefineByName("CUSTOM_DETAIL_NUM3");
@@ -188,6 +204,38 @@
                     break;
             }
         }
+        customTerrianShader() {
+            // 要和shader 中的输入参数一一对应
+            var attributeMap = {
+                'a_Position': VertexMesh.MESH_POSITION0,
+                'a_Normal': VertexMesh.MESH_NORMAL0,
+                'a_Texcoord0': VertexMesh.MESH_TEXTURECOORDINATE0
+            };
+            var uniformMap = {
+                'u_MvpMatrix': Shader3D.PERIOD_SPRITE,
+                'u_WorldMat': Shader3D.PERIOD_SPRITE,
+                'u_CameraPos': Shader3D.PERIOD_CAMERA,
+                'u_SplatAlphaTexture': Shader3D.PERIOD_MATERIAL,
+                'u_DiffuseTexture1': Shader3D.PERIOD_MATERIAL,
+                'u_DiffuseTexture2': Shader3D.PERIOD_MATERIAL,
+                'u_DiffuseTexture3': Shader3D.PERIOD_MATERIAL,
+                'u_DiffuseTexture4': Shader3D.PERIOD_MATERIAL,
+                'u_DiffuseTexture5': Shader3D.PERIOD_MATERIAL,
+                'u_DiffuseScale1': Shader3D.PERIOD_MATERIAL,
+                'u_DiffuseScale2': Shader3D.PERIOD_MATERIAL,
+                'u_DiffuseScale3': Shader3D.PERIOD_MATERIAL,
+                'u_DiffuseScale4': Shader3D.PERIOD_MATERIAL,
+                'u_DiffuseScale5': Shader3D.PERIOD_MATERIAL
+            };
+            Shader3D.addInclude("ShadowSampleTent.glsl", ShadowSampleTentGLSL);
+            Shader3D.addInclude("Shadow.glsl", ShadowGLSL);
+            Shader3D.addInclude("ShadowCasterVS.glsl", ShadowCasterVSGLSL);
+            Shader3D.addInclude("ShadowCasterFS.glsl", ShadowCasterFSGLSL);
+            var customTerrianShader = Shader3D.add("CustomTerrainShader");
+            var subShader = new SubShader(attributeMap, uniformMap);
+            customTerrianShader.addSubShader(subShader);
+            subShader.addShaderPass(TerrainShaderVS, TerrainShaderFS);
+        }
     }
     CustomTerrainMaterial.SPLATALPHATEXTURE = Shader3D.propertyNameToID("u_SplatAlphaTexture");
     CustomTerrainMaterial.DIFFUSETEXTURE1 = Shader3D.propertyNameToID("u_DiffuseTexture1");
@@ -201,43 +249,6 @@
     CustomTerrainMaterial.DIFFUSESCALE4 = Shader3D.propertyNameToID("u_DiffuseScale4");
     CustomTerrainMaterial.DIFFUSESCALE5 = Shader3D.propertyNameToID("u_DiffuseScale5");
     //# sourceMappingURL=CustomTerrainMaterial.js.map
-
-    var TerrainShaderFS = "#ifdef GL_FRAGMENT_PRECISION_HIGH\nprecision highp float;\n#else\nprecision mediump float;\n#endif\n\nuniform sampler2D u_SplatAlphaTexture;\n\nuniform sampler2D u_DiffuseTexture1;\nuniform sampler2D u_DiffuseTexture2;\nuniform sampler2D u_DiffuseTexture3;\nuniform sampler2D u_DiffuseTexture4;\nuniform sampler2D u_DiffuseTexture5;\n\nuniform vec2 u_DiffuseScale1;\nuniform vec2 u_DiffuseScale2;\nuniform vec2 u_DiffuseScale3;\nuniform vec2 u_DiffuseScale4;\nuniform vec2 u_DiffuseScale5;\n\nvarying vec2 v_Texcoord0;\n\nvoid main()\n{\n\t#ifdef CUSTOM_DETAIL_NUM1\n\t\tvec4 splatAlpha = texture2D(u_SplatAlphaTexture, v_Texcoord0);\n\t\tvec4 color1 = texture2D(u_DiffuseTexture1, v_Texcoord0 * u_DiffuseScale1);\n\t\tgl_FragColor.xyz = color1.xyz * splatAlpha.r;\n\t#elif defined(CUSTOM_DETAIL_NUM2)\n\t\tvec4 splatAlpha = texture2D(u_SplatAlphaTexture, v_Texcoord0);\n\t\tvec4 color1 = texture2D(u_DiffuseTexture1, v_Texcoord0 * u_DiffuseScale1);\n\t\tvec4 color2 = texture2D(u_DiffuseTexture2, v_Texcoord0 * u_DiffuseScale2);\n\t\tgl_FragColor.xyz = color1.xyz * splatAlpha.r + color2.xyz * (1.0 - splatAlpha.r);\n\t#elif defined(CUSTOM_DETAIL_NUM3)\n\t\tvec4 splatAlpha = texture2D(u_SplatAlphaTexture, v_Texcoord0);\n\t\tvec4 color1 = texture2D(u_DiffuseTexture1, v_Texcoord0 * u_DiffuseScale1);\n\t\tvec4 color2 = texture2D(u_DiffuseTexture2, v_Texcoord0 * u_DiffuseScale2);\n\t\tvec4 color3 = texture2D(u_DiffuseTexture3, v_Texcoord0 * u_DiffuseScale3);\n\t\tgl_FragColor.xyz = color1.xyz * splatAlpha.r  + color2.xyz * splatAlpha.g + color3.xyz * (1.0 - splatAlpha.r - splatAlpha.g);\n\t#elif defined(CUSTOM_DETAIL_NUM4)\n\t\tvec4 splatAlpha = texture2D(u_SplatAlphaTexture, v_Texcoord0);\n\t\tvec4 color1 = texture2D(u_DiffuseTexture1, v_Texcoord0 * u_DiffuseScale1);\n\t\tvec4 color2 = texture2D(u_DiffuseTexture2, v_Texcoord0 * u_DiffuseScale2);\n\t\tvec4 color3 = texture2D(u_DiffuseTexture3, v_Texcoord0 * u_DiffuseScale3);\n\t\tvec4 color4 = texture2D(u_DiffuseTexture4, v_Texcoord0 * u_DiffuseScale4);\n\t\tgl_FragColor.xyz = color1.xyz * splatAlpha.r  + color2.xyz * splatAlpha.g + color3.xyz * splatAlpha.b + color4.xyz * (1.0 - splatAlpha.r - splatAlpha.g - splatAlpha.b);\n\t#elif defined(CUSTOM_DETAIL_NUM5)\n\t\tvec4 splatAlpha = texture2D(u_SplatAlphaTexture, v_Texcoord0);\n\t\tvec4 color1 = texture2D(u_DiffuseTexture1, v_Texcoord0 * u_DiffuseScale1);\n\t\tvec4 color2 = texture2D(u_DiffuseTexture2, v_Texcoord0 * u_DiffuseScale2);\n\t\tvec4 color3 = texture2D(u_DiffuseTexture3, v_Texcoord0 * u_DiffuseScale3);\n\t\tvec4 color4 = texture2D(u_DiffuseTexture4, v_Texcoord0 * u_DiffuseScale4);\n\t\tvec4 color5 = texture2D(u_DiffuseTexture5, v_Texcoord0 * u_DiffuseScale5);\n\t\tgl_FragColor.xyz = color1.xyz * splatAlpha.r  + color2.xyz * splatAlpha.g + color3.xyz * splatAlpha.b + color4.xyz * splatAlpha.a + color5.xyz * (1.0 - splatAlpha.r - splatAlpha.g - splatAlpha.b - splatAlpha.a);\n\t#else\n\t\t//gl_FragColor.xyz = vec3(0.0, 1.0, 0.0);\n\t#endif\n}\n\n\n\n";
-
-    var TerrainShaderVS = "#include \"Lighting.glsl\";\nattribute vec4 a_Position;\nattribute vec2 a_Texcoord0;\nattribute vec3 a_Normal;\n\nuniform mat4 u_MvpMatrix;\nvarying vec2 v_Texcoord0;\n\nvoid main()\n{\n  gl_Position = u_MvpMatrix * a_Position;\n  v_Texcoord0 = a_Texcoord0;\n gl_Position=remapGLPositionZ(gl_Position);\n}";
-
-    var VertexMesh = Laya.VertexMesh;
-    var SubShader = Laya.SubShader;
-    var Shader3D$1 = Laya.Shader3D;
-    function customTerrianShader() {
-        CustomTerrainMaterial.__init__();
-        var attributeMap = {
-            'a_Position': VertexMesh.MESH_POSITION0,
-            'a_Normal': VertexMesh.MESH_NORMAL0,
-            'a_Texcoord0': VertexMesh.MESH_TEXTURECOORDINATE0
-        };
-        var uniformMap = {
-            'u_MvpMatrix': Shader3D$1.PERIOD_SPRITE,
-            'u_WorldMat': Shader3D$1.PERIOD_SPRITE,
-            'u_CameraPos': Shader3D$1.PERIOD_CAMERA,
-            'u_SplatAlphaTexture': Shader3D$1.PERIOD_MATERIAL,
-            'u_DiffuseTexture1': Shader3D$1.PERIOD_MATERIAL,
-            'u_DiffuseTexture2': Shader3D$1.PERIOD_MATERIAL,
-            'u_DiffuseTexture3': Shader3D$1.PERIOD_MATERIAL,
-            'u_DiffuseTexture4': Shader3D$1.PERIOD_MATERIAL,
-            'u_DiffuseTexture5': Shader3D$1.PERIOD_MATERIAL,
-            'u_DiffuseScale1': Shader3D$1.PERIOD_MATERIAL,
-            'u_DiffuseScale2': Shader3D$1.PERIOD_MATERIAL,
-            'u_DiffuseScale3': Shader3D$1.PERIOD_MATERIAL,
-            'u_DiffuseScale4': Shader3D$1.PERIOD_MATERIAL,
-            'u_DiffuseScale5': Shader3D$1.PERIOD_MATERIAL
-        };
-        var customTerrianShader = Shader3D$1.add("CustomTerrainShader");
-        var subShader = new SubShader(attributeMap, uniformMap);
-        customTerrianShader.addSubShader(subShader);
-        subShader.addShaderPass(TerrainShaderVS, TerrainShaderFS);
-    }
-    //# sourceMappingURL=customShader.js.map
 
     var Texture2D = Laya.Texture2D;
     var Vector2 = Laya.Vector2;
@@ -913,6 +924,172 @@
     }
     //# sourceMappingURL=SceneManager.js.map
 
+    var Shader3D$1 = Laya.Shader3D;
+    class MultiplePassOutlineMaterial extends Laya.BaseMaterial {
+        constructor() {
+            super();
+            MultiplePassOutlineMaterial.initShader();
+            this.setShaderName("MultiplePassOutlineShader");
+            this._shaderValues.setNumber(MultiplePassOutlineMaterial.OUTLINEWIDTH, 0.1581197);
+            this._shaderValues.setNumber(MultiplePassOutlineMaterial.OUTLINELIGHTNESS, 1);
+            this._shaderValues.setVector(MultiplePassOutlineMaterial.OUTLINECOLOR, new Laya.Vector4(1.0, 0, 1.0, 0.0));
+        }
+        /**
+         * @private
+         */
+        static __init__() {
+        }
+        /**
+         * 获取漫反射贴图。
+         * @return 漫反射贴图。
+         */
+        get albedoTexture() {
+            return this._shaderValues.getTexture(MultiplePassOutlineMaterial.ALBEDOTEXTURE);
+        }
+        /**
+         * 设置漫反射贴图。
+         * @param value 漫反射贴图。
+         */
+        set albedoTexture(value) {
+            this._shaderValues.setTexture(MultiplePassOutlineMaterial.ALBEDOTEXTURE, value);
+        }
+        /**
+         * 获取线条颜色
+         * @return 线条颜色
+         */
+        get outlineColor() {
+            return this._shaderValues.getVector(MultiplePassOutlineMaterial.OUTLINECOLOR);
+        }
+        set outlineColor(value) {
+            this._shaderValues.setVector(MultiplePassOutlineMaterial.OUTLINECOLOR, value);
+        }
+        /**
+         * 获取轮廓宽度。
+         * @return 轮廓宽度,范围为0到0.05。
+         */
+        get outlineWidth() {
+            return this._shaderValues.getNumber(MultiplePassOutlineMaterial.OUTLINEWIDTH);
+        }
+        /**
+         * 设置轮廓宽度。
+         * @param value 轮廓宽度,范围为0到0.05。
+         */
+        set outlineWidth(value) {
+            value = Math.max(0.0, Math.min(0.05, value));
+            this._shaderValues.setNumber(MultiplePassOutlineMaterial.OUTLINEWIDTH, value);
+        }
+        /**
+         * 获取轮廓亮度。
+         * @return 轮廓亮度,范围为0到1。
+         */
+        get outlineLightness() {
+            return this._shaderValues.getNumber(MultiplePassOutlineMaterial.OUTLINELIGHTNESS);
+        }
+        /**
+         * 设置轮廓亮度。
+         * @param value 轮廓亮度,范围为0到1。
+         */
+        set outlineLightness(value) {
+            value = Math.max(0.0, Math.min(1.0, value));
+            this._shaderValues.setNumber(MultiplePassOutlineMaterial.OUTLINELIGHTNESS, value);
+        }
+        static initShader() {
+            MultiplePassOutlineMaterial.__init__();
+            var attributeMap = {
+                'a_Position': Laya.VertexMesh.MESH_POSITION0,
+                'a_Normal': Laya.VertexMesh.MESH_NORMAL0,
+                'a_Texcoord0': Laya.VertexMesh.MESH_TEXTURECOORDINATE0
+            };
+            var uniformMap = {
+                'u_MvpMatrix': Laya.Shader3D.PERIOD_SPRITE,
+                'u_WorldMat': Laya.Shader3D.PERIOD_SPRITE,
+                'u_OutlineWidth': Laya.Shader3D.PERIOD_MATERIAL,
+                'u_OutlineColor': Laya.Shader3D.PERIOD_MATERIAL,
+                'u_OutlineLightness': Laya.Shader3D.PERIOD_MATERIAL,
+                'u_AlbedoTexture': Laya.Shader3D.PERIOD_MATERIAL
+            };
+            // Shader3D.addInclude("Lighting.glsl", LightingGLSL); // 在 Laya.3d.js 中已经添加了  没有必要再次添加
+            var customShader = Laya.Shader3D.add("MultiplePassOutlineShader");
+            var subShader = new Laya.SubShader(attributeMap, uniformMap);
+            customShader.addSubShader(subShader);
+            let vs1 = `
+        attribute vec4 a_Position;
+        attribute vec3 a_Normal;
+
+        uniform mat4 u_MvpMatrix;
+        uniform float u_OutlineWidth;
+
+
+        void main()
+        {
+           vec4 position = vec4(a_Position.xyz + a_Normal * u_OutlineWidth, 1.0);
+           gl_Position = u_MvpMatrix * position;
+        }`;
+            let ps1 = `
+        #ifdef FSHIGHPRECISION
+            precision highp float;
+        #else
+           precision mediump float;
+        #endif
+        uniform vec4 u_OutlineColor;
+        uniform float u_OutlineLightness;
+
+        void main()
+        {
+           vec3 finalColor = u_OutlineColor.rgb * u_OutlineLightness;
+           gl_FragColor = vec4(finalColor,0.0);
+        }`;
+            var pass1 = subShader.addShaderPass(vs1, ps1);
+            pass1.renderState.cull = Laya.RenderState.CULL_FRONT;
+            let vs2 = `
+        #include "Lighting.glsl"
+
+        attribute vec4 a_Position;
+        attribute vec2 a_Texcoord0;
+
+        uniform mat4 u_MvpMatrix;
+        uniform mat4 u_WorldMat;
+
+        attribute vec3 a_Normal;
+        varying vec3 v_Normal;
+        varying vec2 v_Texcoord0;
+
+        void main()
+        {
+           gl_Position = u_MvpMatrix * a_Position;
+           mat3 worldMat=mat3(u_WorldMat);
+           v_Normal=worldMat*a_Normal;
+           v_Texcoord0 = a_Texcoord0;
+           gl_Position=remapGLPositionZ(gl_Position);
+        }`;
+            let ps2 = `
+        #ifdef FSHIGHPRECISION
+            precision highp float;
+        #else
+            precision mediump float;
+        #endif
+        varying vec2 v_Texcoord0;
+        varying vec3 v_Normal;
+
+        uniform sampler2D u_AlbedoTexture;
+
+
+        void main()
+        {
+           vec4 albedoTextureColor = vec4(1.0);
+
+           albedoTextureColor = texture2D(u_AlbedoTexture, v_Texcoord0);
+           gl_FragColor=albedoTextureColor;
+        }`;
+            subShader.addShaderPass(vs2, ps2);
+        }
+    }
+    MultiplePassOutlineMaterial.ALBEDOTEXTURE = Shader3D$1.propertyNameToID("u_AlbedoTexture");
+    MultiplePassOutlineMaterial.OUTLINECOLOR = Shader3D$1.propertyNameToID("u_OutlineColor");
+    MultiplePassOutlineMaterial.OUTLINEWIDTH = Shader3D$1.propertyNameToID("u_OutlineWidth");
+    MultiplePassOutlineMaterial.OUTLINELIGHTNESS = Shader3D$1.propertyNameToID("u_OutlineLightness");
+    //# sourceMappingURL=MultiplePassOutlineMaterial.js.map
+
     var Mesh = Laya.Mesh;
     class GameScene extends Laya.Scene3D {
         constructor() {
@@ -955,7 +1132,7 @@
             // }))
         }
         initShader() {
-            customTerrianShader();
+            // customTerrianShader()
         }
         loadLight(desert) {
             // 使用Unity 中的光照
@@ -988,7 +1165,16 @@
             var terrain = desert.getChildByName("Terrain");
             terrain.meshRenderer.receiveShadow = true;
             Mesh.load("res/LayaScene_DesertScene_mobile/Conventional/terrain/terrain_Terrain.lm", Laya.Handler.create(this, function (mesh) {
-                terrain.meshRenderer.sharedMaterial = createTerrainMaterial();
+                // var mat: Laya.BlinnPhongMaterial = new Laya.BlinnPhongMaterial();
+                // Texture2D.load("res/LayaScene_DesertScene_mobile/Conventional/terrain/Ground1.png", Laya.Handler.create(this, function (tex: Texture2D): void {
+                //     mat.albedoTexture = tex
+                //     mat.specularTexture = tex
+                //     terrain.meshRenderer.material = mat
+                //     terrain.meshRenderer.receiveShadow = true
+                // }));
+                terrain.meshRenderer.material = createTerrainMaterial();
+                terrain.meshRenderer.receiveShadow = true;
+                // sharedMaterial  masterial 有什么区别
             }));
             //平面添加物理碰撞体组件
             var planeStaticCollider = terrain.addComponent(Laya.PhysicsCollider);
@@ -1012,7 +1198,33 @@
             // console.log("roboto", roboto.transform.position)
             let wall1 = desert.getChildByName("wall").getChildByName("wall1");
             wall1.meshRenderer.receiveShadow = true;
-            console.log("wall1", wall1);
+            let wall2 = desert.getChildByName("wall").getChildByName("wall2");
+            wall2.meshRenderer.castShadow = true;
+            // 给wall1 增加材质
+            Laya.Texture2D.load("res/LayaScene_DesertScene_mobile/Conventional/Assets/FightingUnityChan_FreeAsset/FightingUnityChan_FreeAsset/Models/UnityChanShader/Texture/hair_01.jpg", Laya.Handler.create(this, function (texture) {
+                var customMaterial = new MultiplePassOutlineMaterial();
+                customMaterial.albedoTexture = texture;
+                customMaterial.outlineWidth = 1;
+                customMaterial.outlineColor = new Laya.Vector4(1, 1, 1, 1);
+                wall1.meshRenderer.sharedMaterial = customMaterial;
+            }));
+            Laya.Mesh.load("res/threeDimen/skinModel/LayaMonkey/Assets/LayaMonkey/LayaMonkey-LayaMonkey.lm", Laya.Handler.create(this, function (mesh) {
+                var layaMonkey = new Laya.MeshSprite3D(mesh);
+                desert.addChild(layaMonkey);
+                layaMonkey.transform.position = new Laya.Vector3(274.27136005859376, 0.3661185466766358, 32.73448944091797);
+                // layaMonkey.transform.localScale = new Laya.Vector3(0.3, 0.3, 0.3);
+                layaMonkey.transform.rotation = new Laya.Quaternion(0.7071068, 0, 0, -0.7071067);
+                var customMaterial = new MultiplePassOutlineMaterial();
+                //漫反射贴图
+                Laya.Texture2D.load("res/threeDimen/skinModel/LayaMonkey2/Assets/LayaMonkey/diffuse.png", Laya.Handler.create(this, function (texture) {
+                    customMaterial.albedoTexture = texture;
+                }));
+                layaMonkey.meshRenderer.sharedMaterial = customMaterial;
+                // let rotation = new Laya.Vector3(0, 0.01, 0);
+                // Laya.timer.frameLoop(1, this, function (): void {
+                //     layaMonkey.transform.rotate(rotation, false);
+                // });
+            }));
         }
         morePlants(desert) {
             let plants = desert.getChildByName("Plants");
@@ -1036,8 +1248,18 @@
             }
             Laya.stage.addChild(new JoyBoxUI());
             new VirtualJoy(new VirtualJoyUI());
-            this._camera.addComponent(CameraFollowScript);
             player.addComponent(RoleMoveScript);
+            this._camera.addComponent(CameraFollowScript); // 因为follow 用到了 role3D 所有要等 player 准备好了之后才添加这个component
+            // var customMaterial = new MultiplePassOutlineMaterial();
+            // Laya.Texture2D.load("res/LayaScene_DesertScene_mobile/Conventional/Assets/Robot Kyle/Textures/Robot_Color.jpg", Laya.Handler.create(this, function (texture) {
+            //     customMaterial.albedoTexture = texture;
+            // }));
+            // //设置材质
+            // for (let i = 0; i < playerRootMesh.numChildren; i++) {
+            //     let oneMesh = playerRootMesh.getChildAt(i) as Laya.SkinnedMeshSprite3D
+            //     oneMesh.skinnedMeshRenderer.castShadow = true
+            //     oneMesh.skinnedMeshRenderer.sharedMaterial = customMaterial;
+            // }
         }
     }
     //# sourceMappingURL=GameScene.js.map

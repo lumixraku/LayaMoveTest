@@ -2,7 +2,7 @@
 
 
 import Mesh = Laya.Mesh;
-import { customTerrianShader } from "./customMaterial/customShader"
+import Texture2D = Laya.Texture2D;
 import { createTerrainMaterial } from "./customMaterial/createMyMaterial"
 import { JoyBoxUI, VirtualJoyUI, VirtualJoy } from "../ui/joy"
 import RoleMoveScript from "./RoleMoveScript"
@@ -10,6 +10,7 @@ import CameraMoveScript from "./common/CameraMoveScript"
 import CameraFollowScript from "./common/CameraFollowScript"
 import SceneManager from "./SceneManager"
 import GameManager from "./GameManager"
+import MultiplePassOutlineMaterial from "./customMaterial/MultiplePassOutlineMaterial";
 
 export default  class GameScene extends Laya.Scene3D {
     private _scene: Laya.Scene3D;
@@ -27,6 +28,7 @@ export default  class GameScene extends Laya.Scene3D {
             Laya.stage.addChild(scene);
             // 使用Unity 中导出的相机
             let camera: Laya.Camera = this._camera = scene.getChildByName("Main Camera") as Laya.Camera;
+
             //相机视角控制组件(脚本),
             // camera.addComponent(CameraMoveScript);
             this._scene.addChild(camera);  // camera 也有scene 属
@@ -68,7 +70,7 @@ export default  class GameScene extends Laya.Scene3D {
         // }))
     }
     initShader() {
-        customTerrianShader()
+        // customTerrianShader()
     }
 
 
@@ -112,7 +114,18 @@ export default  class GameScene extends Laya.Scene3D {
 
 
         Mesh.load("res/LayaScene_DesertScene_mobile/Conventional/terrain/terrain_Terrain.lm", Laya.Handler.create(this, function (mesh: Mesh): void {
-            terrain.meshRenderer.sharedMaterial = createTerrainMaterial();
+            // var mat: Laya.BlinnPhongMaterial = new Laya.BlinnPhongMaterial();
+            // Texture2D.load("res/LayaScene_DesertScene_mobile/Conventional/terrain/Ground1.png", Laya.Handler.create(this, function (tex: Texture2D): void {
+            //     mat.albedoTexture = tex
+            //     mat.specularTexture = tex
+            //     terrain.meshRenderer.material = mat
+            //     terrain.meshRenderer.receiveShadow = true
+            // }));
+
+            terrain.meshRenderer.material = createTerrainMaterial();
+            terrain.meshRenderer.receiveShadow = true
+
+            // sharedMaterial  masterial 有什么区别
         }))
 
         //平面添加物理碰撞体组件
@@ -140,7 +153,43 @@ export default  class GameScene extends Laya.Scene3D {
 
         let wall1: Laya.MeshSprite3D = desert.getChildByName("wall").getChildByName("wall1") as Laya.MeshSprite3D;
         wall1.meshRenderer.receiveShadow = true;
-        console.log("wall1", wall1)
+
+        let wall2: Laya.MeshSprite3D = desert.getChildByName("wall").getChildByName("wall2") as Laya.MeshSprite3D;
+        wall2.meshRenderer.castShadow = true;
+
+        // 给wall1 增加材质
+        Laya.Texture2D.load("res/LayaScene_DesertScene_mobile/Conventional/Assets/FightingUnityChan_FreeAsset/FightingUnityChan_FreeAsset/Models/UnityChanShader/Texture/hair_01.jpg", Laya.Handler.create(this, function (texture: Laya.Texture2D): void {
+            var customMaterial = new MultiplePassOutlineMaterial();
+            customMaterial.albedoTexture = texture;
+            customMaterial.outlineWidth = 1;
+            customMaterial.outlineColor = new Laya.Vector4(1,1,1,1);
+            wall1.meshRenderer.sharedMaterial = customMaterial;
+
+        }));
+
+        Laya.Mesh.load("res/threeDimen/skinModel/LayaMonkey/Assets/LayaMonkey/LayaMonkey-LayaMonkey.lm", Laya.Handler.create(this, function (mesh: Laya.Mesh): void {
+
+            var layaMonkey = new Laya.MeshSprite3D(mesh)
+            desert.addChild(layaMonkey)
+
+            layaMonkey.transform.position = new Laya.Vector3(274.27136005859376, 0.3661185466766358, 32.73448944091797 )
+            // layaMonkey.transform.localScale = new Laya.Vector3(0.3, 0.3, 0.3);
+            layaMonkey.transform.rotation = new Laya.Quaternion(0.7071068, 0, 0, -0.7071067);
+
+
+            var customMaterial = new MultiplePassOutlineMaterial();
+            //漫反射贴图
+            Laya.Texture2D.load("res/threeDimen/skinModel/LayaMonkey2/Assets/LayaMonkey/diffuse.png", Laya.Handler.create(this, function (texture: Laya.Texture2D): void {
+                customMaterial.albedoTexture = texture;
+            }));
+            layaMonkey.meshRenderer.sharedMaterial = customMaterial;
+
+            // let rotation = new Laya.Vector3(0, 0.01, 0);
+            // Laya.timer.frameLoop(1, this, function (): void {
+            //     layaMonkey.transform.rotate(rotation, false);
+            // });
+        }));
+
 
 
     }
@@ -174,8 +223,22 @@ export default  class GameScene extends Laya.Scene3D {
         new VirtualJoy(new VirtualJoyUI());
 
 
-        this._camera.addComponent(CameraFollowScript);
         player.addComponent(RoleMoveScript)
+        this._camera.addComponent(CameraFollowScript);// 因为follow 用到了 role3D 所有要等 player 准备好了之后才添加这个component
+
+
+        // var customMaterial = new MultiplePassOutlineMaterial();
+        // Laya.Texture2D.load("res/LayaScene_DesertScene_mobile/Conventional/Assets/Robot Kyle/Textures/Robot_Color.jpg", Laya.Handler.create(this, function (texture) {
+        //     customMaterial.albedoTexture = texture;
+
+        // }));
+        // //设置材质
+
+        // for (let i = 0; i < playerRootMesh.numChildren; i++) {
+        //     let oneMesh = playerRootMesh.getChildAt(i) as Laya.SkinnedMeshSprite3D
+        //     oneMesh.skinnedMeshRenderer.castShadow = true
+        //     oneMesh.skinnedMeshRenderer.sharedMaterial = customMaterial;
+        // }
 
 
     }

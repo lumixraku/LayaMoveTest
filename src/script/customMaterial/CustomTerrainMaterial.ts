@@ -1,14 +1,25 @@
 import Vector2 = Laya.Vector2;
 import Material = Laya.BaseMaterial;
+import BlinnPhongMaterial = Laya.BlinnPhongMaterial
 import Shader3D = Laya.Shader3D;
 import BaseTexture = Laya.BaseTexture;
 import ShaderDefine = Laya.ShaderDefine;
+
+import ShadowGLSL from "./files/Shadow.glsl";
+import ShadowSampleTentGLSL from "./files/ShadowSampleTent.glsl";
+import ShadowCasterVSGLSL from "./files/ShadowCasterVS.glsl";
+import ShadowCasterFSGLSL from "./files/ShadowCasterFS.glsl";
+import TerrainShaderFS from "./terrainShader.fs";
+import TerrainShaderVS from "./terrainShader.vs";
+import VertexMesh = Laya.VertexMesh;
+import SubShader = Laya.SubShader;
+
 
 /**
  * ...
  * @author
  */
-export default class CustomTerrainMaterial extends Material {
+export default class CustomTerrainMaterial extends BlinnPhongMaterial {
 	static SPLATALPHATEXTURE: number = Shader3D.propertyNameToID("u_SplatAlphaTexture");
 	static DIFFUSETEXTURE1: number = Shader3D.propertyNameToID("u_DiffuseTexture1");
 	static DIFFUSETEXTURE2: number = Shader3D.propertyNameToID("u_DiffuseTexture2");
@@ -28,10 +39,13 @@ export default class CustomTerrainMaterial extends Material {
 	static SHADERDEFINE_DETAIL_NUM4: ShaderDefine;
 	static SHADERDEFINE_DETAIL_NUM5: ShaderDefine;
 
+	static SHADERDEFINE_RECEIVE_SHADOW: number;
+
 	/**
 	 * @private
 	 */
-	static __init__(): void {
+	static __initDefine__(): void {
+
 		CustomTerrainMaterial.SHADERDEFINE_DETAIL_NUM1 = Shader3D.getDefineByName("CUSTOM_DETAIL_NUM1");
 		CustomTerrainMaterial.SHADERDEFINE_DETAIL_NUM2 = Shader3D.getDefineByName("CUSTOM_DETAIL_NUM2");
 		CustomTerrainMaterial.SHADERDEFINE_DETAIL_NUM3 = Shader3D.getDefineByName("CUSTOM_DETAIL_NUM3");
@@ -202,10 +216,52 @@ export default class CustomTerrainMaterial extends Material {
 
 	constructor() {
 		super();
-		
+		this.customTerrianShader();
+		CustomTerrainMaterial.__initDefine__();
+
 		this.setShaderName("CustomTerrainShader");
 	}
 
+	customTerrianShader() {
 
 
+		// 要和shader 中的输入参数一一对应
+		var attributeMap: any = {
+			'a_Position': VertexMesh.MESH_POSITION0,
+			'a_Normal': VertexMesh.MESH_NORMAL0,
+			'a_Texcoord0': VertexMesh.MESH_TEXTURECOORDINATE0
+		};
+		var uniformMap: any = {
+			'u_MvpMatrix': Shader3D.PERIOD_SPRITE,
+			'u_WorldMat': Shader3D.PERIOD_SPRITE,
+			'u_CameraPos': Shader3D.PERIOD_CAMERA,
+			'u_SplatAlphaTexture': Shader3D.PERIOD_MATERIAL,
+			'u_DiffuseTexture1': Shader3D.PERIOD_MATERIAL,
+			'u_DiffuseTexture2': Shader3D.PERIOD_MATERIAL,
+			'u_DiffuseTexture3': Shader3D.PERIOD_MATERIAL,
+			'u_DiffuseTexture4': Shader3D.PERIOD_MATERIAL,
+			'u_DiffuseTexture5': Shader3D.PERIOD_MATERIAL,
+			'u_DiffuseScale1': Shader3D.PERIOD_MATERIAL,
+			'u_DiffuseScale2': Shader3D.PERIOD_MATERIAL,
+			'u_DiffuseScale3': Shader3D.PERIOD_MATERIAL,
+			'u_DiffuseScale4': Shader3D.PERIOD_MATERIAL,
+			'u_DiffuseScale5': Shader3D.PERIOD_MATERIAL
+		};
+
+		Shader3D.addInclude("ShadowSampleTent.glsl", ShadowSampleTentGLSL);
+		Shader3D.addInclude("Shadow.glsl", ShadowGLSL);
+		Shader3D.addInclude("ShadowCasterVS.glsl", ShadowCasterVSGLSL);
+		Shader3D.addInclude("ShadowCasterFS.glsl", ShadowCasterFSGLSL);
+
+		var customTerrianShader: Shader3D = Shader3D.add("CustomTerrainShader");
+		var subShader: SubShader = new SubShader(
+			attributeMap,
+			uniformMap
+		);
+		customTerrianShader.addSubShader(subShader);
+		subShader.addShaderPass(
+			TerrainShaderVS,
+			TerrainShaderFS
+		);
+	}
 }

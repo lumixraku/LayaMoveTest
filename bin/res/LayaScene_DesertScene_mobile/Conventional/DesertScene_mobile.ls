@@ -7971,13 +7971,6 @@
 									"type":"Laya.ExtendTerrainMaterial",
 									"path":"terrain/terrain_Terrain.lmat"
 								}
-							],
-							"lightmapIndex":65534,
-							"lightmapScaleOffset":[
-								1,
-								1,
-								0,
-								0
 							]
 						},
 						"components":[
@@ -15863,7 +15856,7 @@
 									"layer":0,
 									"position":[
 										-24.64,
-										11.31,
+										12.1,
 										-9.17
 									],
 									"rotation":[
@@ -15922,7 +15915,7 @@
 									"layer":0,
 									"position":[
 										-24.64,
-										11.69,
+										12.7,
 										-9.17
 									],
 									"rotation":[
@@ -15970,6 +15963,209 @@
 									}
 								],
 								"child":[]
+							},
+							{
+								"type":"MeshSprite3D",
+								"instanceID":482,
+								"props":{
+									"name":"Sphere",
+									"active":true,
+									"isStatic":false,
+									"layer":0,
+									"position":[
+										-26.07,
+										14,
+										-9.02
+									],
+									"rotation":[
+										0,
+										0,
+										0,
+										-1
+									],
+									"scale":[
+										1,
+										1,
+										1
+									],
+									"meshPath":"Library/unity default resources-Sphere.lm",
+									"enableRender":true,
+									"materials":[
+										{
+											"type":"Laya.BlinnPhongMaterial",
+											"path":"Resources/unity_builtin_extra.lmat"
+										}
+									]
+								},
+								"components":[
+									{
+										"type":"PhysicsCollider",
+										"restitution":0,
+										"friction":0.5,
+										"rollingFriction":0,
+										"shapes":[
+											{
+												"type":"SphereColliderShape",
+												"center":[
+													0,
+													0,
+													0
+												],
+												"radius":0.5
+											}
+										],
+										"isTrigger":false
+									}
+								],
+								"child":[]
+							},
+							{
+								"type":"MeshSprite3D",
+								"instanceID":483,
+								"props":{
+									"name":"Quad",
+									"active":true,
+									"isStatic":false,
+									"layer":0,
+									"position":[
+										-25.13,
+										13.03,
+										-4.76
+									],
+									"rotation":[
+										0,
+										0,
+										0,
+										-1
+									],
+									"scale":[
+										1,
+										1,
+										1
+									],
+									"meshPath":"Library/unity default resources-Quad.lm",
+									"enableRender":true,
+									"materials":[
+										{
+											"path":"Assets/red.lmat"
+										}
+									]
+								},
+								"components":[
+									{
+										"type":"PhysicsCollider",
+										"restitution":0,
+										"friction":0.5,
+										"rollingFriction":0,
+										"shapes":[
+											{
+												"type":"MeshColliderShape",
+												"mesh":"Library/unity default resources-Quad.lm"
+											}
+										],
+										"isTrigger":false
+									}
+								],
+								"child":[]
+							},
+							{
+								"type":"MeshSprite3D",
+								"instanceID":484,
+								"props":{
+									"name":"Quad (1)",
+									"active":true,
+									"isStatic":false,
+									"layer":0,
+									"position":[
+										-25.13,
+										13.03,
+										-5.31
+									],
+									"rotation":[
+										0,
+										0,
+										0,
+										-1
+									],
+									"scale":[
+										1,
+										1,
+										1
+									],
+									"meshPath":"Library/unity default resources-Quad.lm",
+									"enableRender":true,
+									"materials":[
+										{
+											"type":"Laya.BlinnPhongMaterial",
+											"path":"Assets/green.lmat"
+										}
+									]
+								},
+								"components":[
+									{
+										"type":"PhysicsCollider",
+										"restitution":0,
+										"friction":0.5,
+										"rollingFriction":0,
+										"shapes":[
+											{
+												"type":"MeshColliderShape",
+												"mesh":"Library/unity default resources-Quad.lm"
+											}
+										],
+										"isTrigger":false
+									}
+								],
+								"child":[]
+							},
+							{
+								"type":"MeshSprite3D",
+								"instanceID":485,
+								"props":{
+									"name":"Quad (2)",
+									"active":true,
+									"isStatic":false,
+									"layer":0,
+									"position":[
+										-25.13,
+										13.03,
+										-5.9
+									],
+									"rotation":[
+										0,
+										0,
+										0,
+										-1
+									],
+									"scale":[
+										1,
+										1,
+										1
+									],
+									"meshPath":"Library/unity default resources-Quad.lm",
+									"enableRender":true,
+									"materials":[
+										{
+											"path":"Assets/blue.lmat"
+										}
+									]
+								},
+								"components":[
+									{
+										"type":"PhysicsCollider",
+										"restitution":0,
+										"friction":0.5,
+										"rollingFriction":0,
+										"shapes":[
+											{
+												"type":"MeshColliderShape",
+												"mesh":"Library/unity default resources-Quad.lm"
+											}
+										],
+										"isTrigger":false
+									}
+								],
+								"child":[]
 							}
 						]
 					}
@@ -15977,7 +16173,7 @@
 			},
 			{
 				"type":"Camera",
-				"instanceID":482,
+				"instanceID":486,
 				"props":{
 					"name":"Main Camera",
 					"active":true,
@@ -16024,7 +16220,7 @@
 			},
 			{
 				"type":"Sprite3D",
-				"instanceID":483,
+				"instanceID":487,
 				"props":{
 					"name":"Lineup",
 					"active":true,
@@ -16051,7 +16247,7 @@
 				"child":[
 					{
 						"type":"Sprite3D",
-						"instanceID":484,
+						"instanceID":488,
 						"props":{
 							"name":"aloe_m",
 							"active":true,
@@ -16061,134 +16257,6 @@
 								7.84,
 								0,
 								-7.23
-							],
-							"rotation":[
-								0,
-								0,
-								0,
-								-1
-							],
-							"scale":[
-								1,
-								1,
-								1
-							]
-						},
-						"components":[],
-						"child":[
-							{
-								"type":"MeshSprite3D",
-								"instanceID":485,
-								"props":{
-									"name":"default",
-									"active":true,
-									"isStatic":false,
-									"layer":0,
-									"position":[
-										0,
-										0,
-										0
-									],
-									"rotation":[
-										0,
-										0,
-										0,
-										-1
-									],
-									"scale":[
-										1,
-										1,
-										1
-									],
-									"meshPath":"Assets/Runemark Studio/Freebies/PolyDesert Mobile/Meshes/aloe-default.lm",
-									"enableRender":true,
-									"materials":[
-										{
-											"path":"Assets/Runemark Studio/Freebies/PolyDesert Mobile/Meshes/Materials/polydesert_atlas.lmat"
-										}
-									]
-								},
-								"components":[],
-								"child":[]
-							}
-						]
-					},
-					{
-						"type":"Sprite3D",
-						"instanceID":486,
-						"props":{
-							"name":"cactus01_m",
-							"active":true,
-							"isStatic":false,
-							"layer":0,
-							"position":[
-								5.969,
-								-0.005827665,
-								-7.275
-							],
-							"rotation":[
-								0,
-								0,
-								0,
-								-1
-							],
-							"scale":[
-								1,
-								1,
-								1
-							]
-						},
-						"components":[],
-						"child":[
-							{
-								"type":"MeshSprite3D",
-								"instanceID":487,
-								"props":{
-									"name":"default",
-									"active":true,
-									"isStatic":false,
-									"layer":0,
-									"position":[
-										0,
-										0,
-										0
-									],
-									"rotation":[
-										0,
-										0,
-										0,
-										-1
-									],
-									"scale":[
-										1,
-										1,
-										1
-									],
-									"meshPath":"Assets/Runemark Studio/Freebies/PolyDesert Mobile/Meshes/cactus01-default.lm",
-									"enableRender":true,
-									"materials":[
-										{
-											"path":"Assets/Runemark Studio/Freebies/PolyDesert Mobile/Meshes/Materials/polydesert_atlas.lmat"
-										}
-									]
-								},
-								"components":[],
-								"child":[]
-							}
-						]
-					},
-					{
-						"type":"Sprite3D",
-						"instanceID":488,
-						"props":{
-							"name":"cactus02_m",
-							"active":true,
-							"isStatic":false,
-							"layer":0,
-							"position":[
-								4.526,
-								0,
-								-7.25
 							],
 							"rotation":[
 								0,
@@ -16228,7 +16296,7 @@
 										1,
 										1
 									],
-									"meshPath":"Assets/Runemark Studio/Freebies/PolyDesert Mobile/Meshes/cactus02-default.lm",
+									"meshPath":"Assets/Runemark Studio/Freebies/PolyDesert Mobile/Meshes/aloe-default.lm",
 									"enableRender":true,
 									"materials":[
 										{
@@ -16245,14 +16313,14 @@
 						"type":"Sprite3D",
 						"instanceID":490,
 						"props":{
-							"name":"cactus03_m",
+							"name":"cactus01_m",
 							"active":true,
 							"isStatic":false,
 							"layer":0,
 							"position":[
-								2.729,
-								0,
-								-7.296
+								5.969,
+								-0.005827665,
+								-7.275
 							],
 							"rotation":[
 								0,
@@ -16292,7 +16360,7 @@
 										1,
 										1
 									],
-									"meshPath":"Assets/Runemark Studio/Freebies/PolyDesert Mobile/Meshes/cactus03-default.lm",
+									"meshPath":"Assets/Runemark Studio/Freebies/PolyDesert Mobile/Meshes/cactus01-default.lm",
 									"enableRender":true,
 									"materials":[
 										{
@@ -16309,14 +16377,14 @@
 						"type":"Sprite3D",
 						"instanceID":492,
 						"props":{
-							"name":"rock08_m",
+							"name":"cactus02_m",
 							"active":true,
 							"isStatic":false,
 							"layer":0,
 							"position":[
-								2.857985,
+								4.526,
 								0,
-								-3.320668
+								-7.25
 							],
 							"rotation":[
 								0,
@@ -16356,7 +16424,7 @@
 										1,
 										1
 									],
-									"meshPath":"Assets/Runemark Studio/Freebies/PolyDesert Mobile/Meshes/rock08-default.lm",
+									"meshPath":"Assets/Runemark Studio/Freebies/PolyDesert Mobile/Meshes/cactus02-default.lm",
 									"enableRender":true,
 									"materials":[
 										{
@@ -16373,14 +16441,14 @@
 						"type":"Sprite3D",
 						"instanceID":494,
 						"props":{
-							"name":"rock07_m",
+							"name":"cactus03_m",
 							"active":true,
 							"isStatic":false,
 							"layer":0,
 							"position":[
-								7.348682,
+								2.729,
 								0,
-								-3.498123
+								-7.296
 							],
 							"rotation":[
 								0,
@@ -16420,7 +16488,7 @@
 										1,
 										1
 									],
-									"meshPath":"Assets/Runemark Studio/Freebies/PolyDesert Mobile/Meshes/rock07-default.lm",
+									"meshPath":"Assets/Runemark Studio/Freebies/PolyDesert Mobile/Meshes/cactus03-default.lm",
 									"enableRender":true,
 									"materials":[
 										{
@@ -16437,14 +16505,14 @@
 						"type":"Sprite3D",
 						"instanceID":496,
 						"props":{
-							"name":"rock06_m",
+							"name":"rock08_m",
 							"active":true,
 							"isStatic":false,
 							"layer":0,
 							"position":[
-								1.369626,
+								2.857985,
 								0,
-								0.1
+								-3.320668
 							],
 							"rotation":[
 								0,
@@ -16484,7 +16552,7 @@
 										1,
 										1
 									],
-									"meshPath":"Assets/Runemark Studio/Freebies/PolyDesert Mobile/Meshes/rock06-default.lm",
+									"meshPath":"Assets/Runemark Studio/Freebies/PolyDesert Mobile/Meshes/rock08-default.lm",
 									"enableRender":true,
 									"materials":[
 										{
@@ -16501,14 +16569,14 @@
 						"type":"Sprite3D",
 						"instanceID":498,
 						"props":{
-							"name":"rock05_m",
+							"name":"rock07_m",
 							"active":true,
 							"isStatic":false,
 							"layer":0,
 							"position":[
-								5.872007,
+								7.348682,
 								0,
-								0.14
+								-3.498123
 							],
 							"rotation":[
 								0,
@@ -16548,7 +16616,7 @@
 										1,
 										1
 									],
-									"meshPath":"Assets/Runemark Studio/Freebies/PolyDesert Mobile/Meshes/rock05-default.lm",
+									"meshPath":"Assets/Runemark Studio/Freebies/PolyDesert Mobile/Meshes/rock07-default.lm",
 									"enableRender":true,
 									"materials":[
 										{
@@ -16565,14 +16633,14 @@
 						"type":"Sprite3D",
 						"instanceID":500,
 						"props":{
-							"name":"rock04_m",
+							"name":"rock06_m",
 							"active":true,
 							"isStatic":false,
 							"layer":0,
 							"position":[
-								10.28137,
+								1.369626,
 								0,
-								-0.13
+								0.1
 							],
 							"rotation":[
 								0,
@@ -16612,7 +16680,7 @@
 										1,
 										1
 									],
-									"meshPath":"Assets/Runemark Studio/Freebies/PolyDesert Mobile/Meshes/rock04-default.lm",
+									"meshPath":"Assets/Runemark Studio/Freebies/PolyDesert Mobile/Meshes/rock06-default.lm",
 									"enableRender":true,
 									"materials":[
 										{
@@ -16629,14 +16697,14 @@
 						"type":"Sprite3D",
 						"instanceID":502,
 						"props":{
-							"name":"rock03_m",
+							"name":"rock05_m",
 							"active":true,
 							"isStatic":false,
 							"layer":0,
 							"position":[
-								1.185814,
+								5.872007,
 								0,
-								4.84
+								0.14
 							],
 							"rotation":[
 								0,
@@ -16676,7 +16744,7 @@
 										1,
 										1
 									],
-									"meshPath":"Assets/Runemark Studio/Freebies/PolyDesert Mobile/Meshes/rock03-default.lm",
+									"meshPath":"Assets/Runemark Studio/Freebies/PolyDesert Mobile/Meshes/rock05-default.lm",
 									"enableRender":true,
 									"materials":[
 										{
@@ -16693,14 +16761,14 @@
 						"type":"Sprite3D",
 						"instanceID":504,
 						"props":{
-							"name":"rock02_m",
+							"name":"rock04_m",
 							"active":true,
 							"isStatic":false,
 							"layer":0,
 							"position":[
-								6.317034,
+								10.28137,
 								0,
-								4.96
+								-0.13
 							],
 							"rotation":[
 								0,
@@ -16740,7 +16808,7 @@
 										1,
 										1
 									],
-									"meshPath":"Assets/Runemark Studio/Freebies/PolyDesert Mobile/Meshes/rock02-default.lm",
+									"meshPath":"Assets/Runemark Studio/Freebies/PolyDesert Mobile/Meshes/rock04-default.lm",
 									"enableRender":true,
 									"materials":[
 										{
@@ -16757,14 +16825,14 @@
 						"type":"Sprite3D",
 						"instanceID":506,
 						"props":{
-							"name":"rock01_m",
+							"name":"rock03_m",
 							"active":true,
 							"isStatic":false,
 							"layer":0,
 							"position":[
-								10.83119,
+								1.185814,
 								0,
-								4.23
+								4.84
 							],
 							"rotation":[
 								0,
@@ -16804,6 +16872,134 @@
 										1,
 										1
 									],
+									"meshPath":"Assets/Runemark Studio/Freebies/PolyDesert Mobile/Meshes/rock03-default.lm",
+									"enableRender":true,
+									"materials":[
+										{
+											"path":"Assets/Runemark Studio/Freebies/PolyDesert Mobile/Meshes/Materials/polydesert_atlas.lmat"
+										}
+									]
+								},
+								"components":[],
+								"child":[]
+							}
+						]
+					},
+					{
+						"type":"Sprite3D",
+						"instanceID":508,
+						"props":{
+							"name":"rock02_m",
+							"active":true,
+							"isStatic":false,
+							"layer":0,
+							"position":[
+								6.317034,
+								0,
+								4.96
+							],
+							"rotation":[
+								0,
+								0,
+								0,
+								-1
+							],
+							"scale":[
+								1,
+								1,
+								1
+							]
+						},
+						"components":[],
+						"child":[
+							{
+								"type":"MeshSprite3D",
+								"instanceID":509,
+								"props":{
+									"name":"default",
+									"active":true,
+									"isStatic":false,
+									"layer":0,
+									"position":[
+										0,
+										0,
+										0
+									],
+									"rotation":[
+										0,
+										0,
+										0,
+										-1
+									],
+									"scale":[
+										1,
+										1,
+										1
+									],
+									"meshPath":"Assets/Runemark Studio/Freebies/PolyDesert Mobile/Meshes/rock02-default.lm",
+									"enableRender":true,
+									"materials":[
+										{
+											"path":"Assets/Runemark Studio/Freebies/PolyDesert Mobile/Meshes/Materials/polydesert_atlas.lmat"
+										}
+									]
+								},
+								"components":[],
+								"child":[]
+							}
+						]
+					},
+					{
+						"type":"Sprite3D",
+						"instanceID":510,
+						"props":{
+							"name":"rock01_m",
+							"active":true,
+							"isStatic":false,
+							"layer":0,
+							"position":[
+								10.83119,
+								0,
+								4.23
+							],
+							"rotation":[
+								0,
+								0,
+								0,
+								-1
+							],
+							"scale":[
+								1,
+								1,
+								1
+							]
+						},
+						"components":[],
+						"child":[
+							{
+								"type":"MeshSprite3D",
+								"instanceID":511,
+								"props":{
+									"name":"default",
+									"active":true,
+									"isStatic":false,
+									"layer":0,
+									"position":[
+										0,
+										0,
+										0
+									],
+									"rotation":[
+										0,
+										0,
+										0,
+										-1
+									],
+									"scale":[
+										1,
+										1,
+										1
+									],
 									"meshPath":"Assets/Runemark Studio/Freebies/PolyDesert Mobile/Meshes/rock01-default.lm",
 									"enableRender":true,
 									"materials":[
@@ -16819,7 +17015,7 @@
 					},
 					{
 						"type":"MeshSprite3D",
-						"instanceID":508,
+						"instanceID":512,
 						"props":{
 							"name":"Quad",
 							"active":true,
@@ -16870,7 +17066,7 @@
 			},
 			{
 				"type":"Sprite3D",
-				"instanceID":509,
+				"instanceID":513,
 				"props":{
 					"name":"Cube",
 					"active":true,
@@ -16897,7 +17093,7 @@
 				"child":[
 					{
 						"type":"MeshSprite3D",
-						"instanceID":510,
+						"instanceID":514,
 						"props":{
 							"name":"CubeZ",
 							"active":true,
@@ -16923,7 +17119,6 @@
 							"enableRender":true,
 							"materials":[
 								{
-									"type":"Laya.BlinnPhongMaterial",
 									"path":"Assets/blue.lmat"
 								}
 							]
@@ -16956,7 +17151,7 @@
 					},
 					{
 						"type":"MeshSprite3D",
-						"instanceID":511,
+						"instanceID":515,
 						"props":{
 							"name":"CubeX",
 							"active":true,
@@ -16982,7 +17177,6 @@
 							"enableRender":true,
 							"materials":[
 								{
-									"type":"Laya.BlinnPhongMaterial",
 									"path":"Assets/red.lmat"
 								}
 							]

@@ -20,6 +20,12 @@ uniform vec2 u_DiffuseScale5;
 
 varying vec2 v_Texcoord0;
 
+#include "Shadow.glsl"
+#ifdef RECEIVESHADOW
+	varying vec4 v_ShadowCoord;
+#endif
+
+
 void main()
 {
 	#ifdef CUSTOM_DETAIL_NUM1
@@ -55,7 +61,6 @@ void main()
 	#else
 		//gl_FragColor.xyz = vec3(0.0, 1.0, 0.0);
 	#endif
+
+
 }
-
-
-
